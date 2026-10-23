@@ -1,138 +1,136 @@
-# PX4 Drone Autopilot
+# PX4 Fault Injector
 
-[![Releases](https://img.shields.io/github/release/PX4/PX4-Autopilot.svg)](https://github.com/PX4/PX4-Autopilot/releases) [![DOI](https://zenodo.org/badge/22634/PX4/PX4-Autopilot.svg)](https://zenodo.org/badge/latestdoi/22634/PX4/PX4-Autopilot)
+**Parameterized and auditable fault injection for PX4-based UAV experiments in simulation and on physical flight controllers.**
 
-[![Nuttx Targets](https://github.com/PX4/PX4-Autopilot/workflows/Nuttx%20Targets/badge.svg)](https://github.com/PX4/PX4-Autopilot/actions?query=workflow%3A%22Nuttx+Targets%22?branch=master) [![SITL Tests](https://github.com/PX4/PX4-Autopilot/workflows/SITL%20Tests/badge.svg?branch=master)](https://github.com/PX4/PX4-Autopilot/actions?query=workflow%3A%22SITL+Tests%22)
+This project extends **PX4-Autopilot v1.15.2** with a fault-management module, PX4-internal sensor and actuator injection hooks, custom MAVLink commands, and consumer-side application auditing. The same fault definitions and transformation semantics are implemented for software-in-the-loop (SITL) and Pixhawk 6C (FMUv6C) builds.
 
-[![Discord Shield](https://discordapp.com/api/guilds/1022170275984457759/widget.png?style=shield)](https://discord.gg/dronecode)
+Rather than treating a fault's **ACTIVE** state as proof that it affected the vehicle, the framework records whether the corresponding PX4 consumer actually applied the degradation. It is designed for controlled UAV reliability, fault-response, and safety experiments.
 
-This repository holds the [PX4](http://px4.io) flight control solution for drones, with the main applications located in the [src/modules](https://github.com/PX4/PX4-Autopilot/tree/main/src/modules) directory. It also contains the PX4 Drone Middleware Platform, which provides drivers and middleware to run drones.
+> **Research code based on PX4, not an official PX4 release.** The repository contains the fault-injection infrastructure, not the complete flight-planning, experiment orchestration, datasets, or outcome-analysis pipeline used in the accompanying research.
 
-PX4 is highly portable, OS-independent and supports Linux, NuttX and MacOS out of the box.
+## What this project provides
 
-* Official Website: http://px4.io (License: BSD 3-clause, [LICENSE](https://github.com/PX4/PX4-Autopilot/blob/main/LICENSE))
-* [Supported airframes](https://docs.px4.io/main/en/airframes/airframe_reference.html) ([portfolio](https://px4.io/ecosystem/commercial-systems/)):
-  * [Multicopters](https://docs.px4.io/main/en/frames_multicopter/)
-  * [Fixed wing](https://docs.px4.io/main/en/frames_plane/)
-  * [VTOL](https://docs.px4.io/main/en/frames_vtol/)
-  * [Autogyro](https://docs.px4.io/main/en/frames_autogyro/)
-  * [Rover](https://docs.px4.io/main/en/frames_rover/)
-  * many more experimental types (Blimps, Boats, Submarines, High altitude balloons, etc)
-* Releases: [Downloads](https://github.com/PX4/PX4-Autopilot/releases)
+- **Parameterized fault scenarios:** select the target, affected axes or motors, magnitude, optional stochastic seed, onset delay, and duration; control definitions using `SET`, `QUERY`, `CLEAR`, and `CLEAR_ALL`.
+- **Matched internal injection points:** sensor degradations are introduced immediately before EKF2 measurement consumption; actuator degradations are applied after control allocation and before motor-output publication.
+- **Application-level auditing:** target consumers report cumulative actual applications through uORB; `fault_manager` validates and aggregates the feedback into `FAULT_STATUS` over MAVLink.
+- **Portable PX4 builds:** a SITL implementation and a hardware-targeted FMUv6C implementation based on the same official PX4 v1.15.2 revision.
+- **Reproducible Linux/WSL checks:** isolated SITL smoke tests, a Python MAVLink-dialect installer, and a numerical motor-cap ULog verifier.
 
+### Implemented fault modes
 
-## Building a PX4 based drone, rover, boat or robot
+| PX4 target | Configurable modes |
+| --- | --- |
+| IMU accelerometer | Bias; Gaussian noise |
+| IMU gyroscope | Bias; Gaussian noise |
+| Magnetometer | Bias; Gaussian noise |
+| GNSS position | Bias; Gaussian noise (local NED) |
+| GNSS velocity | Bias; Gaussian noise (NED) |
+| Downward range | Bias; noise; effective-range degradation |
+| Barometric altitude | Bias; noise |
+| Motor output | Bias; delay; maximum-output limit |
 
-The [PX4 User Guide](https://docs.px4.io/main/en/) explains how to assemble [supported vehicles](https://docs.px4.io/main/en/airframes/airframe_reference.html) and fly drones with PX4.
-See the [forum and chat](https://docs.px4.io/main/en/#getting-help) if you need help!
+There are **18 effective modes**, plus `NO_EFFECT` for lifecycle and communication testing. Vector modes support axis selection; motor modes support a motor-selection mask. See the accompanying manuscript for parameter units, transformations, and execution order.
 
+## Repository branches
 
-## Changing code and contributing
+| Branch | Intended platform | Build target |
+| --- | --- | --- |
+| [`sim`](https://github.com/pbisonedgit/PX4_fault_injector/tree/sim) | PX4 SITL, including SIH-based smoke tests | `px4_sitl_default` |
+| [`real`](https://github.com/pbisonedgit/PX4_fault_injector/tree/real) | PX4 firmware for Pixhawk 6C / FMUv6C | `px4_fmu-v6c_default` |
 
-This [Developer Guide](https://docs.px4.io/main/en/development/development.html) is for software developers who want to modify the flight stack and middleware (e.g. to add new flight modes), hardware integrators who want to support new flight controller boards and peripherals, and anyone who wants to get PX4 working on a new (unsupported) airframe/vehicle.
+Both branches descend from the official PX4 v1.15.2 base, commit [`4817c061`](https://github.com/PX4/PX4-Autopilot/commit/4817c0618a1286846116e90c6eb8919efaa013cf). They share the fault definitions and their intended semantics, but contain platform-specific integration differences: **do not copy firmware-specific implementation files from one branch into the other**.
 
-Developers should read the [Guide for Contributions](https://docs.px4.io/main/en/contribute/).
-See the [forum and chat](https://docs.px4.io/main/en/#getting-help) if you need help!
+## Quick start: SIM on Linux / WSL
 
+Install the [PX4 v1.15 development toolchain](https://docs.px4.io/v1.15/en/dev_setup/dev_env.html) before building. Commands below run on Linux or WSL; Windows-specific MAVLink generation is not required.
 
-### Weekly Dev Call
+```bash
+git clone --branch sim https://github.com/pbisonedgit/PX4_fault_injector.git PX4_fault_SIM
+cd PX4_fault_SIM
+git submodule update --init --recursive
+python3 fault_release/prepare_dialect.py
+make px4_sitl_default
+```
 
-The PX4 Dev Team syncs up on a [weekly dev call](https://docs.px4.io/main/en/contribute/).
+The project tracks the authoritative custom MAVLink XML at `fault_release/dialects/fault_injection.xml`. The preparation script copies it into the **official pinned MAVLink submodule** for the PX4 build. The copied XML is deliberately not committed inside the upstream submodule. Run the preparation step again after reinitializing/resetting submodules.
 
-> **Note** The dev call is open to all interested developers (not just the core dev team). This is a great opportunity to meet the team and contribute to the ongoing development of the platform. It includes a QA session for newcomers. All regular calls are listed in the [Dronecode calendar](https://www.dronecode.org/calendar/).
+### Start the local SIH test vehicle
 
+```bash
+make px4_sitl sihsim_quadx
+```
 
-## Maintenance Team
+At the resulting `pxh>` prompt:
 
-Note: This is the source of truth for the active maintainers of PX4 ecosystem.
+```text
+fault_manager start
+mavlink start -x -u 14680 -r 4000000 -f -m custom -o 14541 -t 127.0.0.1
+mavlink stream -u 14680 -s FAULT_ACK -r 20
+mavlink stream -u 14680 -s FAULT_STATUS -r 20
+mavlink status
+```
 
-| Sector | Maintainer |
-|---|---|
-| Founder | [Lorenz Meier](https://github.com/LorenzMeier) |
-| Architecture | [Daniel Agar](https://github.com/dagar) / [Beat Küng](https://github.com/bkueng)|
-| State Estimation | [Mathieu Bresciani](https://github.com/bresch) / [Paul Riseborough](https://github.com/priseborough) |
-| OS/NuttX | [David Sidrane](https://github.com/davids5) |
-| Drivers | [Daniel Agar](https://github.com/dagar) |
-| Simulation | [Jaeyoung Lim](https://github.com/Jaeyoung-Lim) |
-| ROS2 | [Beniamino Pozzan](https://github.com/beniaminopozzan) |
-| Community QnA Call | [Ramon Roche](https://github.com/mrpollo) |
-| [Documentation](https://docs.px4.io/main/en/) | [Hamish Willee](https://github.com/hamishwillee) |
+The dedicated test link uses **PX4 UDP 14680 → Python UDP 14541**, on `127.0.0.1`. Verify this exact instance in `mavlink status`. An unrelated SIH custom link may appear on `19450/19410`. Run only one intended PX4 SITL instance at a time.
 
-| Vehicle Type | Maintainer |
-|---|---|
-| Multirotor | [Matthias Grob](https://github.com/MaEtUgR) |
-| Fixed Wing | [Thomas Stastny](https://github.com/tstastny) |
-| Hybrid VTOL | [Silvan Fuhrer](https://github.com/sfuhrer) |
-| Boat | x |
-| Rover | x |
+### Prepare Python and run smoke tests
 
-See also [maintainers list](https://px4.io/community/maintainers/) (px4.io) and the [contributors list](https://github.com/PX4/PX4-Autopilot/graphs/contributors) (Github). However it may be not up to date.
+In a second terminal, from the SIM repository root:
 
-## Supported Hardware
+```bash
+LAB="$HOME/px4_fault_test_lab"
+python3 -m venv "$LAB/venv"
+PY="$LAB/venv/bin/python"
+"$PY" -m pip install 'pymavlink==2.4.50' 'fastcrc==0.5.0' 'lxml==6.1.3'
+"$PY" fault_release/tests/prepare_pymavlink.py --install
+mkdir -p "$LAB/results"
 
-Pixhawk standard boards and proprietary boards are shown below (discontinued boards aren't listed).
+"$PY" fault_release/tests/smoke_no_effect.py --px4-host 127.0.0.1 --confirm-isolated-sitl --output "$LAB/results/no_effect.json"
+"$PY" fault_release/tests/smoke_imu_bias.py --px4-host 127.0.0.1 --confirm-isolated-sitl --output "$LAB/results/imu_bias.json"
+"$PY" fault_release/tests/smoke_gnss_position_bias.py --px4-host 127.0.0.1 --confirm-isolated-sitl --output "$LAB/results/gnss_position_bias.json"
+"$PY" fault_release/tests/smoke_motor_cap_interface.py --px4-host 127.0.0.1 --confirm-isolated-sitl --output "$LAB/results/motor_cap_interface.json"
+```
 
-For the most up to date information, please visit [PX4 user Guide > Autopilot Hardware](https://docs.px4.io/main/en/flight_controller/).
+These clients **do not arm, take off, or send motor commands**. The GNSS test requires an initialized GNSS-capable SITL estimator; `sihsim_quadx` was used for the tested workflow. Execute the tests sequentially, since they share the test UDP ports.
 
-### Pixhawk Standard Boards
+A separate **motor-cap effect test and ULog numerical verifier** are documented in the SIM branch's [`fault_release/tests/README.md`](https://github.com/pbisonedgit/PX4_fault_injector/blob/sim/fault_release/tests/README.md). That check uses a *manually controlled, isolated software simulation* to produce actual motor commands; the fault command client itself does not initiate flight.
 
-These boards fully comply with Pixhawk Standard, and are maintained by the PX4-Autopilot maintainers and Dronecode team
+## Build for Pixhawk 6C / FMUv6C
 
-* FMUv6X and FMUv6C
-  * [CUAV Pixahwk V6X (FMUv6X)](https://docs.px4.io/main/en/flight_controller/cuav_pixhawk_v6x.html)
-  * [Holybro Pixhawk 6X (FMUv6X)](https://docs.px4.io/main/en/flight_controller/pixhawk6x.html)
-  * [Holybro Pixhawk 6C (FMUv6C)](https://docs.px4.io/main/en/flight_controller/pixhawk6c.html)
-  * [Holybro Pix32 v6 (FMUv6C)](https://docs.px4.io/main/en/flight_controller/holybro_pix32_v6.html)
-* FMUv5 and FMUv5X (STM32F7, 2019/20)
-  * [Pixhawk 4 (FMUv5)](https://docs.px4.io/main/en/flight_controller/pixhawk4.html)
-  * [Pixhawk 4 mini (FMUv5)](https://docs.px4.io/main/en/flight_controller/pixhawk4_mini.html)
-  * [CUAV V5+ (FMUv5)](https://docs.px4.io/main/en/flight_controller/cuav_v5_plus.html)
-  * [CUAV V5 nano (FMUv5)](https://docs.px4.io/main/en/flight_controller/cuav_v5_nano.html)
-  * [Auterion Skynode (FMUv5X)](https://docs.auterion.com/avionics/skynode)
-* FMUv4 (STM32F4, 2015)
-  * [Pixracer](https://docs.px4.io/main/en/flight_controller/pixracer.html)
-  * [Pixhawk 3 Pro](https://docs.px4.io/main/en/flight_controller/pixhawk3_pro.html)
-* FMUv3 (STM32F4, 2014)
-  * [Pixhawk 2](https://docs.px4.io/main/en/flight_controller/pixhawk-2.html)
-  * [Pixhawk Mini](https://docs.px4.io/main/en/flight_controller/pixhawk_mini.html)
-  * [CUAV Pixhack v3](https://docs.px4.io/main/en/flight_controller/pixhack_v3.html)
-* FMUv2 (STM32F4, 2013)
-  * [Pixhawk](https://docs.px4.io/main/en/flight_controller/pixhawk.html)
+Use a Linux environment with the PX4 v1.15 embedded toolchain:
 
-### Manufacturer supported
+```bash
+git clone --branch real https://github.com/pbisonedgit/PX4_fault_injector.git PX4_fault_REAL
+cd PX4_fault_REAL
+git submodule update --init --recursive
+python3 fault_release/prepare_dialect.py
+make px4_fmu-v6c_default
+```
 
-These boards are maintained to be compatible with PX4-Autopilot by the Manufacturers.
+The `real` branch includes the reviewed FMUv6C-specific firmware build configuration. **Building firmware is not authorization to flash or fly it.** Integration with an actual vehicle requires separate hardware, failsafe, regulatory, and flight-test review. The supplied localhost SITL smoke-test clients are for the `sim` branch only and must never be redirected to physical hardware.
 
-* [ARK Electronics ARKV6X](https://docs.px4.io/main/en/flight_controller/arkv6x.html)
-* [CubePilot Cube Orange+](https://docs.px4.io/main/en/flight_controller/cubepilot_cube_orangeplus.html)
-* [CubePilot Cube Orange](https://docs.px4.io/main/en/flight_controller/cubepilot_cube_orange.html)
-* [CubePilot Cube Yellow](https://docs.px4.io/main/en/flight_controller/cubepilot_cube_yellow.html)
-* [Holybro Durandal](https://docs.px4.io/main/en/flight_controller/durandal.html)
-* [Airmind MindPX V2.8](http://www.mindpx.net/assets/accessories/UserGuide_MindPX.pdf)
-* [Airmind MindRacer V1.2](http://mindpx.net/assets/accessories/mindracer_user_guide_v1.2.pdf)
-* [Holybro Kakute F7](https://docs.px4.io/main/en/flight_controller/kakutef7.html)
+## Interface and source layout
 
-### Community supported
+| Path | Purpose |
+| --- | --- |
+| `src/modules/fault_manager/` | Fault definitions, registry, lifecycle, runtime effects, feedback aggregation |
+| `src/modules/ekf2/` | Sensor-side fault injectors at EKF2 consumption points |
+| `src/modules/control_allocator/` | Motor bias/delay/maximum-output injector and signal-level measurements |
+| `src/lib/fault_injection/` | Shared fault identity, validation, deterministic noise, and audit helpers |
+| `msg/Fault*.msg` | uORB definitions for commands, effects, feedback, and measurements |
+| `fault_release/dialects/fault_injection.xml` | Git-tracked MAVLink 2 dialect source of truth |
+| `fault_release/prepare_dialect.py` | Installs the dialect into the initialized build submodule |
+| `fault_release/tests/` | SIM-side Python setup, smoke tests, and ULog verification |
 
-These boards don't fully comply industry standards, and thus is solely maintained by the PX4 public community members.
+Custom MAVLink messages are `FAULT_COMMAND` (12956), `FAULT_ACK` (12957), `FAULT_STATUS` (12958), and `FAULTED_DOWNWARD_DISTANCE` (12959). The corresponding Python dialect is **not** installed merely by cloning; use `fault_release/tests/prepare_pymavlink.py` in an isolated Python virtual environment for the Python test client.
 
-### Experimental
+Fault status reports both lifecycle state and `applied_count`. Consumer-level audit and selected raw-versus-faulted signal measurements are separate from flight-outcome or simulator-fidelity assessment.
 
-These boards are nor maintained by PX4 team nor Manufacturer, and is not guaranteed to be compatible with up to date PX4 releases.
+## Research context
 
-* [Raspberry PI with Navio 2](https://docs.px4.io/main/en/flight_controller/raspberry_pi_navio2.html)
-* [Bitcraze Crazyflie 2.0](https://docs.px4.io/main/en/complete_vehicles/crazyflie2.html)
+The associated manuscript is **“A Parameterized and Auditable PX4 Fault-Injection Framework for Simulation and Physical UAV Flight”**, by Zhen Peng, Yuxiang Feng, and Arnab Majumdar. It describes the framework architecture, implemented modes, consumer-side auditing, and a matched AirSim–PX4 / physical-flight case study. This repository releases the **PX4 fault-injection component**, not a turnkey reproduction of all experiments in the manuscript. Bibliographic details can be added here after publication.
 
-## Project Roadmap
+## Safety, provenance, and licences
 
-**Note: Outdated**
+This is experimental research software. Only use the supplied automated smoke tests with an **isolated, localhost-only SITL** process. The `--confirm-isolated-sitl` flag is an operator declaration, not a hardware detector. Do not connect the test ports to physical autopilots or forwarding routers. Save JSON reports, ULogs, Python virtual environments, and local test configurations outside the Git source tree.
 
-A high level project roadmap is available [here](https://github.com/orgs/PX4/projects/25).
-
-## Project Governance
-
-The PX4 Autopilot project including all of its trademarks is hosted under [Dronecode](https://www.dronecode.org/), part of the Linux Foundation.
-
-<a href="https://www.dronecode.org/" style="padding:20px" ><img src="https://mavlink.io/assets/site/logo_dronecode.png" alt="Dronecode Logo" width="110px"/></a>
-<a href="https://www.linuxfoundation.org/projects" style="padding:20px;"><img src="https://mavlink.io/assets/site/logo_linux_foundation.png" alt="Linux Foundation Logo" width="80px" /></a>
-<div style="padding:10px">&nbsp;</div>
+This work builds upon [PX4-Autopilot](https://github.com/PX4/PX4-Autopilot) v1.15.2. The original PX4 source, submodules, copyright notices, and upstream/third-party licences remain applicable; see [`LICENSE`](LICENSE) and the notices in the relevant source files. The project is an independent research modification and is **not affiliated with or endorsed by the PX4 development team**.

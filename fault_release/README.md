@@ -32,33 +32,20 @@ For external Python controllers, the XML alone does not install Python import
 support. The tested, isolated Linux/WSL `pymavlink` setup is described in
 [`tests/README.md`](tests/README.md). Windows is not required for this workflow.
 
-## SITL verification and scope
+## SITL tests
 
-SITL build of this branch was independently completed using the clean official
-PX4 source tree. The four reviewed, named WSL tests under `tests/` have been
-run against this branch, with the following observations:
+The [`fault_release/tests/`](tests/) directory provides four non-flying
+Linux/WSL smoke tests covering lifecycle handling, EKF2 IMU bias, EKF2 GNSS
+position bias, and motor-cap interface operations. It also contains a separate
+motor-cap effect probe and offline ULog numerical verifier for controlled,
+software-only SITL experiments.
 
-| Test | Verified | Not established |
-| --- | --- | --- |
-| `smoke_no_effect.py` | SET, QUERY, CLEAR, pending/active/expired transitions, CLEAR_ALL; zero applications | Physical platform behavior |
-| `smoke_imu_bias.py` | EKF2 accelerometer and gyro bias application counters grow while active and freeze after CLEAR | Independently measured numerical bias magnitude |
-| `smoke_gnss_position_bias.py` | With `make px4_sitl sihsim_quadx`, GNSS consumer applications and post-CLEAR freeze; example run: 48 applications, final-report feedback | Independent numerical position offset or navigational consequence |
-| `smoke_motor_cap_interface.py` | Motor-cap definition, ACK/STATUS, QUERY/CLEAR and count stability while disarmed | Actual motor-output clipping/cap-hit |
+For detailed per-test assertions, setup, commands and evidence, see
+[`tests/README.md`](tests/README.md). This top-level overview intentionally
+keeps the validation matrix and test-specific boundaries in the tests folder.
 
-An application counter reflects the injector's **consumer-side application
-feedback**, not an independently measured actuator or sensor error. The smoke
-tests do not arm, take off, or command motors. Never run them against physical
-flight hardware, and do not use this integration as a flight-safety guarantee.
-
-A numeric motor-cap validation requires a **separate, deliberately controlled,
-software-only SITL** scenario with finite actuator commands above the configured
-cap, inspecting both `fault_motor_output_measurement` (raw and faulted values)
-and `fault_motor_max_output_degradation_applied`. Do not describe the current
-interface-only motor test as proof of clipping.
-
-The `real` branch has passed an FMUv6C firmware build using a documented lean
-board configuration; it has **not** been flashed or validated on real hardware
-in this release workflow.
+This integration is an experimental fault-injection research tool. Never connect
+the localhost smoke-test endpoints to physical flight hardware.
 
 ## Reproducibility
 
