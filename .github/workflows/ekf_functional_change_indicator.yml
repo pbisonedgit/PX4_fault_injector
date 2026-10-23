@@ -14,6 +14,12 @@ jobs:
       run: |
         git fetch origin pull/${{github.event.pull_request.number}}/head:${{github.head_ref}}
         git checkout ${GITHUB_HEAD_REF}
+    - name: Prepare custom MAVLink dialect
+      run: |
+        git submodule update --init --recursive
+        python3 fault_release/prepare_dialect.py
+        cmp -s fault_release/dialects/fault_injection.xml src/modules/mavlink/mavlink/message_definitions/v1.0/fault_injection.xml
+        echo "[PASS] Custom MAVLink dialect prepared"
     - name: main test
       run: make tests TESTFILTER=EKF
     - name: Check if there is a functional change
