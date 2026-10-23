@@ -1,0 +1,291 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mavlink>
+  <include>development.xml</include>
+  <version>2</version>
+  <dialect>0</dialect>
+  <enums>
+    <enum name="FAULT_ACTION">
+      <description>Action requested by an FAULT fault command.</description>
+      <entry value="1" name="FAULT_ACTION_SET">
+        <description>Create or replace one fault definition.</description>
+      </entry>
+      <entry value="2" name="FAULT_ACTION_CLEAR">
+        <description>Clear the specified fault definition.</description>
+      </entry>
+      <entry value="3" name="FAULT_ACTION_CLEAR_ALL">
+        <description>Clear all FAULT fault definitions.</description>
+      </entry>
+      <entry value="4" name="FAULT_ACTION_QUERY">
+        <description>Request the current status of the specified fault.</description>
+      </entry>
+    </enum>
+    <enum name="FAULT_TARGET">
+      <description>PX4 subsystem or data path targeted by an FAULT fault.</description>
+      <entry value="0" name="FAULT_TARGET_NONE">
+        <description>No flight-system target. Used for infrastructure tests.</description>
+      </entry>
+      <entry value="1" name="FAULT_TARGET_IMU">
+        <description>The effective IMU information channel supplied to the PX4 estimator.</description>
+      </entry>
+      <entry value="2" name="FAULT_TARGET_MAG">
+        <description>Effective three-axis magnetometer estimator input.</description>
+      </entry>
+      <entry value="3" name="FAULT_TARGET_GNSS">
+        <description>Effective GNSS position or velocity measurement supplied to the PX4 estimator.</description>
+      </entry>
+      <entry value="4" name="FAULT_TARGET_DOWNWARD_RANGE">
+        <description>Selected downward-facing range measurement supplied to the PX4 estimator.</description>
+      </entry>
+      <entry value="5" name="FAULT_TARGET_BAROMETER">
+        <description>Barometric altitude measurement supplied to the PX4 estimator.</description>
+      </entry>
+      <entry value="6" name="FAULT_TARGET_MOTOR">
+        <description>Allocated normalized motor commands supplied to the common PX4 actuator-output path.</description>
+      </entry>
+    </enum>
+    <enum name="FAULT_MODE">
+      <description>Transformation applied by an FAULT fault.</description>
+      <entry value="0" name="FAULT_MODE_NO_EFFECT">
+        <description>Infrastructure-only fault that does not modify flight data or commands.</description>
+      </entry>
+      <entry value="1" name="FAULT_MODE_ACCEL_BIAS">
+        <description>Add a constant acceleration bias vector in m/s^2 to the effective IMU estimator input.</description>
+      </entry>
+      <entry value="2" name="FAULT_MODE_ACCEL_NOISE">
+        <description>Add deterministic zero-mean Gaussian white acceleration noise with per-axis standard deviation in m/s^2 to the effective IMU estimator input.</description>
+      </entry>
+      <entry value="3" name="FAULT_MODE_GYRO_BIAS">
+        <description>Add a constant body-frame angular-rate bias vector in rad/s to the effective IMU estimator input.</description>
+      </entry>
+      <entry value="4" name="FAULT_MODE_GYRO_NOISE">
+        <description>Add deterministic zero-mean Gaussian white angular-rate noise with per-axis standard deviation in rad/s to the effective IMU estimator input.</description>
+      </entry>
+      <entry value="5" name="FAULT_MODE_MAG_BIAS">
+        <description>Add a constant body-frame three-axis magnetic-field bias vector in Gauss to the effective magnetometer estimator input.</description>
+      </entry>
+      <entry value="6" name="FAULT_MODE_MAG_NOISE">
+        <description>Add deterministic zero-mean Gaussian white magnetometer noise with per-axis standard deviation in Gauss to the effective estimator input.</description>
+      </entry>
+      <entry value="7" name="FAULT_MODE_GNSS_POSITION_BIAS">
+        <description>Add a constant unreported NED position offset in metres to the effective GNSS estimator input while preserving receiver health and accuracy metadata.</description>
+      </entry>
+      <entry value="8" name="FAULT_MODE_GNSS_POSITION_NOISE">
+        <description>Add deterministic zero-mean Gaussian white NED position noise with per-axis standard deviation in metres to the effective GNSS estimator input while preserving receiver health and accuracy metadata.</description>
+      </entry>
+      <entry value="9" name="FAULT_MODE_GNSS_VELOCITY_BIAS">
+        <description>Add a constant unreported NED velocity offset in metres per second to the effective GNSS estimator input while preserving receiver health, validity and accuracy metadata.</description>
+      </entry>
+      <entry value="10" name="FAULT_MODE_GNSS_VELOCITY_NOISE">
+        <description>Add deterministic zero-mean Gaussian white NED velocity noise with per-axis standard deviation in metres per second to the effective GNSS estimator input while preserving receiver health, validity and accuracy metadata.</description>
+      </entry>
+      <entry value="11" name="FAULT_MODE_DOWNWARD_RANGE_BIAS">
+        <description>Add a constant unreported scalar offset in metres to the selected downward-facing range measurement supplied to the PX4 estimator.</description>
+      </entry>
+      <entry value="12" name="FAULT_MODE_DOWNWARD_RANGE_NOISE">
+        <description>Add deterministic zero-mean Gaussian white noise with scalar standard deviation in metres to a detected downward-facing range measurement.</description>
+      </entry>
+      <entry value="13" name="FAULT_MODE_DOWNWARD_RANGE_DEGRADATION">
+        <description>Reduce the effective maximum detection distance of the downward-facing range sensor. The scalar parameter is the effective maximum distance in metres.</description>
+      </entry>
+      <entry value="14" name="FAULT_MODE_BARO_ALTITUDE_BIAS">
+        <description>Add a constant unreported scalar offset in metres to the barometric altitude supplied to the PX4 estimator.</description>
+      </entry>
+      <entry value="15" name="FAULT_MODE_BARO_ALTITUDE_NOISE">
+        <description>Add deterministic zero-mean Gaussian white noise with scalar standard deviation in metres to the barometric altitude supplied to the PX4 estimator.</description>
+      </entry>
+      <entry value="16" name="FAULT_MODE_MOTOR_OUTPUT_BIAS">
+        <description>Add a constant normalized command bias to the selected allocated motor commands before actuator output conversion.</description>
+      </entry>
+      <entry value="17" name="FAULT_MODE_MOTOR_OUTPUT_DELAY">
+        <description>Use an older allocated motor command for selected motors. delay_us is the requested command age.</description>
+      </entry>
+      <entry value="18" name="FAULT_MODE_MOTOR_MAX_OUTPUT_DEGRADATION">
+        <description>Cap selected motor commands at a reduced absolute normalized maximum. scalar is the cap in [0, 1).</description>
+      </entry>
+    </enum>
+    <enum name="FAULT_RESULT">
+      <description>Result of processing an FAULT fault command.</description>
+      <entry value="0" name="FAULT_RESULT_ACCEPTED">
+        <description>The command was accepted.</description>
+      </entry>
+      <entry value="1" name="FAULT_RESULT_REJECTED">
+        <description>The command was rejected.</description>
+      </entry>
+      <entry value="2" name="FAULT_RESULT_DUPLICATE">
+        <description>The command sequence had already been processed.</description>
+      </entry>
+      <entry value="3" name="FAULT_RESULT_NOT_FOUND">
+        <description>The requested fault definition was not found.</description>
+      </entry>
+      <entry value="4" name="FAULT_RESULT_INTERNAL_ERROR">
+        <description>The command could not be processed because of an internal error.</description>
+      </entry>
+    </enum>
+    <enum name="FAULT_REASON">
+      <description>Detailed reason associated with an FAULT fault acknowledgement.</description>
+      <entry value="0" name="FAULT_REASON_NONE">
+        <description>No rejection or error reason.</description>
+      </entry>
+      <entry value="1" name="FAULT_REASON_DISABLED">
+        <description>FAULT fault injection is disabled.</description>
+      </entry>
+      <entry value="2" name="FAULT_REASON_ARMED_NOT_ALLOWED">
+        <description>Fault configuration is not permitted while the vehicle is armed.</description>
+      </entry>
+      <entry value="3" name="FAULT_REASON_INVALID_PROTOCOL_VERSION">
+        <description>The protocol version is unsupported.</description>
+      </entry>
+      <entry value="4" name="FAULT_REASON_INVALID_ACTION">
+        <description>The requested action is invalid.</description>
+      </entry>
+      <entry value="5" name="FAULT_REASON_INVALID_TARGET">
+        <description>The requested fault target is unsupported.</description>
+      </entry>
+      <entry value="6" name="FAULT_REASON_INVALID_MODE">
+        <description>The requested fault mode is unsupported.</description>
+      </entry>
+      <entry value="7" name="FAULT_REASON_INVALID_INSTANCE_MASK">
+        <description>The target instance mask is invalid.</description>
+      </entry>
+      <entry value="8" name="FAULT_REASON_INVALID_AXIS_MASK">
+        <description>The target axis mask is invalid.</description>
+      </entry>
+      <entry value="9" name="FAULT_REASON_INVALID_DURATION">
+        <description>The requested duration is invalid or exceeds the configured limit.</description>
+      </entry>
+      <entry value="10" name="FAULT_REASON_NO_FREE_SLOT">
+        <description>No fault storage slot is available.</description>
+      </entry>
+      <entry value="11" name="FAULT_REASON_UNKNOWN_FAULT_ID">
+        <description>The requested fault identifier does not exist.</description>
+      </entry>
+      <entry value="12" name="FAULT_REASON_DUPLICATE_SEQUENCE">
+        <description>The command sequence has already been processed.</description>
+      </entry>
+      <entry value="13" name="FAULT_REASON_INVALID_PARAMETER">
+        <description>A target/mode-specific scalar, vector, delay, or other effect parameter is invalid.</description>
+      </entry>
+      <entry value="14" name="FAULT_REASON_DUPLICATE_FAULT_ID">
+        <description>The scenario-local fault identifier is already used by a different target/mode object.</description>
+      </entry>
+    </enum>
+    <enum name="FAULT_STATE">
+      <description>Current lifecycle state of an FAULT fault definition.</description>
+      <entry value="0" name="FAULT_STATE_EMPTY">
+        <description>No fault definition occupies the slot.</description>
+      </entry>
+      <entry value="1" name="FAULT_STATE_PENDING">
+        <description>The fault has been accepted but its activation time has not arrived.</description>
+      </entry>
+      <entry value="2" name="FAULT_STATE_ACTIVE">
+        <description>The fault is currently active.</description>
+      </entry>
+      <entry value="3" name="FAULT_STATE_CLEARED">
+        <description>The fault was explicitly cleared.</description>
+      </entry>
+      <entry value="4" name="FAULT_STATE_EXPIRED">
+        <description>The configured fault duration has elapsed.</description>
+      </entry>
+      <entry value="5" name="FAULT_STATE_REJECTED">
+        <description>The fault definition was rejected.</description>
+      </entry>
+    </enum>
+  </enums>
+  <messages>
+    <message id="12956" name="FAULT_COMMAND">
+      <description>Configure, clear, or query an FAULT fault managed inside PX4. The command itself does not directly modify flight data; fault application is performed only by explicitly implemented PX4 fault hooks.</description>
+      <field type="uint32_t" name="scenario_id">Identifier of the scenario that owns this command.</field>
+      <field type="uint32_t" name="sequence">Monotonically increasing command sequence used for acknowledgement and duplicate detection.</field>
+      <field type="uint32_t" name="start_delay_ms">Delay from PX4 command reception until fault activation, in milliseconds.</field>
+      <field type="uint32_t" name="duration_ms">Requested active duration in milliseconds.</field>
+      <field type="uint32_t" name="random_seed">Deterministic random seed for stochastic fault modes.</field>
+      <field type="uint32_t" name="delay_us">Delay parameter used by future delayed-data fault modes, in microseconds.</field>
+      <field type="uint32_t" name="instance_mask">Bitmask selecting target sensor, battery, or actuator instances.</field>
+      <field type="float[3]" name="vector">Three-component parameter vector. Its interpretation depends on target and mode.</field>
+      <field type="float" name="scalar">Scalar fault parameter. Its interpretation depends on target and mode.</field>
+      <field type="uint16_t" name="fault_id">Scenario-local identifier of the fault definition.</field>
+      <field type="uint8_t" name="target_system">MAVLink system expected to process the command.</field>
+      <field type="uint8_t" name="target_component">MAVLink component expected to process the command.</field>
+      <field type="uint8_t" name="protocol_version">FAULT fault protocol version. The initial version is 1.</field>
+      <field type="uint8_t" name="action" enum="FAULT_ACTION">Requested fault-management action.</field>
+      <field type="uint8_t" name="target" enum="FAULT_TARGET">PX4 subsystem or data path targeted by the fault.</field>
+      <field type="uint8_t" name="mode" enum="FAULT_MODE">Fault transformation mode.</field>
+      <field type="uint8_t" name="axis_mask">Target-specific selection mask. For vector sensors: bit0 X, bit1 Y, bit2 Z. For TARGET_MOTOR: bits0..7 select Motor1..Motor8.</field>
+    </message>
+    <message id="12957" name="FAULT_ACK">
+      <description>Acknowledgement generated by PX4 after processing an FAULT fault command.</description>
+      <field type="uint64_t" name="timestamp_us">PX4 hrt_absolute_time() when the acknowledgement was generated.</field>
+      <field type="uint32_t" name="scenario_id">Scenario identifier copied from the command.</field>
+      <field type="uint32_t" name="sequence">Command sequence copied from the command.</field>
+      <field type="uint16_t" name="fault_id">Fault identifier copied from the command.</field>
+      <field type="uint8_t" name="target_system">MAVLink system to which this acknowledgement is addressed.</field>
+      <field type="uint8_t" name="target_component">MAVLink component to which this acknowledgement is addressed.</field>
+      <field type="uint8_t" name="protocol_version">FAULT fault protocol version used by PX4.</field>
+      <field type="uint8_t" name="result" enum="FAULT_RESULT">Overall command-processing result.</field>
+      <field type="uint8_t" name="reason" enum="FAULT_REASON">Detailed acceptance, rejection, or error reason.</field>
+      <field type="uint8_t" name="state" enum="FAULT_STATE">Fault state after processing the command.</field>
+    </message>
+    <message id="12958" name="FAULT_STATUS">
+      <description>Current PX4-side configuration and lifecycle state of one FAULT fault definition.</description>
+      <field type="uint64_t" name="timestamp_us">PX4 hrt_absolute_time() when this status was generated.</field>
+      <field type="uint64_t" name="activation_time_us">PX4 monotonic time at which the fault becomes or became active.</field>
+      <field type="uint64_t" name="expiration_time_us">PX4 monotonic time at which the fault expires.</field>
+      <field type="uint32_t" name="scenario_id">Identifier of the scenario that owns the fault.</field>
+      <field type="uint32_t" name="sequence">Sequence of the command that created or most recently updated the fault.</field>
+      <field type="uint32_t" name="applied_count">Number of samples or outputs actually transformed by the fault hook.</field>
+      <field type="uint32_t" name="instance_mask">Bitmask selecting target instances.</field>
+      <field type="uint32_t" name="random_seed">Accepted deterministic random seed.</field>
+      <field type="uint32_t" name="delay_us">Accepted delay parameter in microseconds.</field>
+      <field type="float[3]" name="vector">Accepted three-component fault parameter.</field>
+      <field type="float" name="scalar">Accepted scalar fault parameter.</field>
+      <field type="uint16_t" name="fault_id">Scenario-local fault identifier.</field>
+      <field type="uint8_t" name="target_system">MAVLink system to which this status is addressed.</field>
+      <field type="uint8_t" name="target_component">MAVLink component to which this status is addressed.</field>
+      <field type="uint8_t" name="protocol_version">FAULT fault protocol version used by PX4.</field>
+      <field type="uint8_t" name="target" enum="FAULT_TARGET">Configured PX4 subsystem or data-path target.</field>
+      <field type="uint8_t" name="mode" enum="FAULT_MODE">Configured fault mode.</field>
+      <field type="uint8_t" name="state" enum="FAULT_STATE">Current lifecycle state.</field>
+      <field type="uint8_t" name="axis_mask">Accepted target-specific axis or motor-selection bitmask.</field>
+    </message>
+    <message id="12959" name="FAULTED_DOWNWARD_DISTANCE">
+      <description>Continuous PX4 authoritative downward-distance output for the companion supervisor. Positive infinity means that no usable target is currently detected.</description>
+      <field type="uint64_t" name="timestamp_us">PX4 publication time in microseconds.</field>
+      <field type="uint64_t" name="timestamp_sample_us">Source distance_sensor timestamp, or zero when no source has ever been observed.</field>
+      <field type="uint64_t" name="sample_age_us">Age of the most recent source sample, or zero when no source has ever been observed.</field>
+      <field type="uint32_t" name="device_id">Original distance-sensor device identity.</field>
+      <field type="uint32_t" name="bias_scenario_id">Bias scenario identifier, or zero.</field>
+      <field type="uint32_t" name="bias_definition_sequence">Bias SET sequence, or zero.</field>
+      <field type="uint32_t" name="noise_scenario_id">Noise scenario identifier, or zero.</field>
+      <field type="uint32_t" name="noise_definition_sequence">Noise SET sequence, or zero.</field>
+      <field type="uint32_t" name="degradation_scenario_id">Range-degradation scenario identifier, or zero.</field>
+      <field type="uint32_t" name="degradation_definition_sequence">Range-degradation SET sequence, or zero.</field>
+      <field type="float" name="raw_distance_m">Latest raw source distance, or positive infinity before a source exists.</field>
+      <field type="float" name="faulted_distance_m">Finite detected distance after degradation, bias and noise; positive infinity when no target is detected.</field>
+      <field type="float" name="bias_effect_m">Bias applied to this source sample, or zero.</field>
+      <field type="float" name="noise_effect_m">Noise applied to this source sample, or zero.</field>
+      <field type="float" name="min_distance_m">Nominal minimum sensor distance.</field>
+      <field type="float" name="nominal_max_distance_m">Nominal maximum sensor distance.</field>
+      <field type="float" name="effective_max_distance_m">Current effective maximum distance after degradation.</field>
+      <field type="float" name="variance_m2">Original source variance.</field>
+      <field type="uint16_t" name="bias_fault_id">Bias fault identifier, or zero.</field>
+      <field type="uint16_t" name="noise_fault_id">Noise fault identifier, or zero.</field>
+      <field type="uint16_t" name="degradation_fault_id">Range-degradation fault identifier, or zero.</field>
+      <field type="int8_t" name="signal_quality">Original source signal quality.</field>
+      <field type="uint8_t" name="sensor_type">Original MAV_DISTANCE_SENSOR type.</field>
+      <field type="uint8_t" name="orientation">Original MAV_SENSOR_ORIENTATION value.</field>
+      <field type="uint8_t" name="estimator_instance">Publishing EKF2 instance.</field>
+      <field type="uint8_t" name="availability_reason">Zero for valid; one no source; two stale; three non-finite; four below minimum; five above nominal maximum; six blocked by degraded range.</field>
+      <field type="uint8_t" name="source_present">One after a source sample has ever been observed.</field>
+      <field type="uint8_t" name="source_fresh">One while the latest sample is at most 100 ms old.</field>
+      <field type="uint8_t" name="source_valid">One when the latest raw sample is finite and within nominal limits.</field>
+      <field type="uint8_t" name="measurement_available">One when faulted_distance_m is a usable finite detection.</field>
+      <field type="uint8_t" name="no_detection">One when faulted_distance_m is positive infinity.</field>
+      <field type="uint8_t" name="bias_active">One when the bias definition is active.</field>
+      <field type="uint8_t" name="noise_active">One when the noise definition is active.</field>
+      <field type="uint8_t" name="range_degradation_active">One when the range-degradation definition is active.</field>
+      <field type="uint8_t" name="bias_applied">One when bias transformed the latest available sample.</field>
+      <field type="uint8_t" name="noise_applied">One when noise transformed the latest available sample.</field>
+      <field type="uint8_t" name="range_degradation_applied">One when range degradation blocked the latest nominally valid sample.</field>
+    </message>
+  </messages>
+</mavlink>

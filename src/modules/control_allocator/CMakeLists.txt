@@ -45,6 +45,8 @@ px4_add_module(
 	SRCS
 		ControlAllocator.cpp
 		ControlAllocator.hpp
+		MotorFaultInjector.cpp
+		MotorFaultInjector.hpp
 	MODULE_CONFIG
 		module.yaml
 	DEPENDS

@@ -1,0 +1,14 @@
+# Active FAULT motor-command response-delay snapshot.
+# delay_us is the age of the raw allocated motor command selected for output.
+# motor_mask bit0 selects Motor1 / actuator_motors.control[0], through bit7.
+
+uint64 timestamp
+
+uint32 scenario_id
+uint32 sequence
+uint32 delay_us
+
+uint16 fault_id
+
+uint8 motor_mask
+bool active

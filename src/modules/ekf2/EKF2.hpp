@@ -45,6 +45,27 @@
 #include "Utility/PreFlightChecker.hpp"
 
 #include "EKF2Selector.hpp"
+#include "ImuAccelBiasInjector.hpp"
+#include "ImuAccelNoiseInjector.hpp"
+#include "ImuGyroBiasInjector.hpp"
+#include "ImuGyroNoiseInjector.hpp"
+#include "DownwardRangeBiasInjector.hpp"
+#include "DownwardRangeNoiseInjector.hpp"
+#include "DownwardRangeDegradationInjector.hpp"
+#if defined(CONFIG_EKF2_BAROMETER)
+# include "BaroAltitudeBiasInjector.hpp"
+# include "BaroAltitudeNoiseInjector.hpp"
+#endif
+#if defined(CONFIG_EKF2_GNSS)
+# include "GnssPositionBiasInjector.hpp"
+# include "GnssPositionNoiseInjector.hpp"
+# include "GnssVelocityBiasInjector.hpp"
+# include "GnssVelocityNoiseInjector.hpp"
+#endif
+#if defined(CONFIG_EKF2_MAGNETOMETER)
+# include "MagBiasInjector.hpp"
+# include "MagNoiseInjector.hpp"
+#endif
 
 #include <float.h>
 
@@ -97,6 +118,7 @@
 
 #if defined(CONFIG_EKF2_BAROMETER)
 # include <uORB/topics/vehicle_air_data.h>
+# include <uORB/topics/fault_baro_altitude_measurement.h>
 #endif // CONFIG_EKF2_BAROMETER
 
 #if defined(CONFIG_EKF2_GNSS)
@@ -115,6 +137,8 @@
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
 # include <uORB/topics/distance_sensor.h>
+# include <uORB/topics/fault_downward_range_measurement.h>
+# include <uORB/topics/faulted_downward_distance.h>
 #endif // CONFIG_EKF2_RANGE_FINDER
 
 #if defined(CONFIG_EKF2_WIND)
@@ -227,6 +251,7 @@ private:
 #endif // CONFIG_EKF2_MAGNETOMETER
 #if defined(CONFIG_EKF2_RANGE_FINDER)
 	void UpdateRangeSample(ekf2_timestamps_s &ekf2_timestamps);
+	void PublishFaultedDownwardDistance(hrt_abstime now_us);
 #endif // CONFIG_EKF2_RANGE_FINDER
 
 	void UpdateSystemFlagsSample(ekf2_timestamps_s &ekf2_timestamps);
@@ -310,6 +335,9 @@ private:
 
 	uORB::Subscription _magnetometer_sub{ORB_ID(vehicle_magnetometer)};
 
+	MagBiasInjector _mag_bias_injector{};
+	MagNoiseInjector _mag_noise_injector{};
+
 	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_mag_pub{ORB_ID(estimator_aid_src_mag)};
 #endif // CONFIG_EKF2_MAGNETOMETER
 
@@ -368,6 +396,11 @@ private:
 
 	uORB::Subscription _airdata_sub{ORB_ID(vehicle_air_data)};
 
+	BaroAltitudeBiasInjector _baro_altitude_bias_injector{};
+	BaroAltitudeNoiseInjector _baro_altitude_noise_injector{};
+	uORB::PublicationMulti<fault_baro_altitude_measurement_s>
+		_fault_baro_altitude_measurement_pub{ORB_ID(fault_baro_altitude_measurement)};
+
 	uORB::PublicationMulti<estimator_bias_s> _estimator_baro_bias_pub{ORB_ID(estimator_baro_bias)};
 	uORB::PublicationMulti<estimator_aid_source1d_s> _estimator_aid_src_baro_hgt_pub {ORB_ID(estimator_aid_src_baro_hgt)};
 #endif // CONFIG_EKF2_BAROMETER
@@ -395,6 +428,21 @@ private:
 
 	orb_advert_t _mavlink_log_pub{nullptr};
 
+	/*
+	 * Per-EKF-instance read-only cache of the manager-owned effective
+	 * acceleration-bias snapshot. No IMU data is transformed in this stage.
+	 */
+	ImuAccelBiasInjector _imu_accel_bias_injector{};
+
+	/*
+	 * Per-EKF-instance read-only cache of the manager-owned acceleration-noise
+	 * snapshot. Random generation and IMU data modification are added only in
+	 * later stages.
+	 */
+	ImuAccelNoiseInjector _imu_accel_noise_injector{};
+	ImuGyroBiasInjector _imu_gyro_bias_injector{};
+	ImuGyroNoiseInjector _imu_gyro_noise_injector{};
+
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
 	uORB::Subscription _sensor_selection_sub{ORB_ID(sensor_selection)};
@@ -412,6 +460,16 @@ private:
 	uORB::PublicationMulti<estimator_bias_s> _estimator_rng_hgt_bias_pub {ORB_ID(estimator_rng_hgt_bias)};
 	uORB::PublicationMulti<estimator_aid_source1d_s> _estimator_aid_src_rng_hgt_pub{ORB_ID(estimator_aid_src_rng_hgt)};
 
+	DownwardRangeBiasInjector _downward_range_bias_injector{};
+	DownwardRangeNoiseInjector _downward_range_noise_injector{};
+	DownwardRangeDegradationInjector _downward_range_degradation_injector{};
+	uORB::PublicationMulti<fault_downward_range_measurement_s>
+		_fault_downward_range_measurement_pub{ORB_ID(fault_downward_range_measurement)};
+	uORB::PublicationMulti<faulted_downward_distance_s>
+		_faulted_downward_distance_pub{ORB_ID(faulted_downward_distance)};
+	fault_downward_range_measurement_s _last_fault_downward_range_measurement{};
+	hrt_abstime _last_fault_downward_range_output_publish{0};
+	bool _has_last_fault_downward_range_measurement{false};
 	uORB::SubscriptionMultiArray<distance_sensor_s> _distance_sensor_subs{ORB_ID::distance_sensor};
 	hrt_abstime _last_range_sensor_update{0};
 	int _distance_sensor_selected{-1}; // because we can have several distance sensor instances with different orientations
@@ -470,6 +528,11 @@ private:
 	float _last_gnss_hgt_bias_published{};
 
 	uORB::Subscription _vehicle_gps_position_sub{ORB_ID(vehicle_gps_position)};
+
+	GnssPositionBiasInjector _gnss_position_bias_injector{};
+	GnssPositionNoiseInjector _gnss_position_noise_injector{};
+	GnssVelocityBiasInjector _gnss_velocity_bias_injector{};
+	GnssVelocityNoiseInjector _gnss_velocity_noise_injector{};
 
 	uORB::PublicationMulti<estimator_bias_s> _estimator_gnss_hgt_bias_pub{ORB_ID(estimator_gnss_hgt_bias)};
 	uORB::PublicationMulti<estimator_gps_status_s> _estimator_gps_status_pub{ORB_ID(estimator_gps_status)};

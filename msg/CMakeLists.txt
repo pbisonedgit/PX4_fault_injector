@@ -250,6 +250,49 @@ set(msg_files
 	WheelEncoders.msg
 	Wind.msg
 	YawEstimatorStatus.msg
+	FaultAck.msg
+	FaultCommand.msg
+	FaultStatus.msg
+	FaultImuAccelBias.msg
+	FaultImuAccelBiasApplied.msg
+	FaultImuAccelNoise.msg
+	FaultImuAccelNoiseApplied.msg
+	FaultImuGyroBias.msg
+	FaultImuGyroBiasApplied.msg
+	FaultImuGyroNoise.msg
+	FaultImuGyroNoiseApplied.msg
+	FaultMagBias.msg
+	FaultMagBiasApplied.msg
+	FaultMagNoise.msg
+	FaultMagNoiseApplied.msg
+	FaultGnssPositionBias.msg
+	FaultGnssPositionBiasApplied.msg
+	FaultGnssPositionNoise.msg
+	FaultGnssPositionNoiseApplied.msg
+	FaultGnssVelocityBias.msg
+	FaultGnssVelocityBiasApplied.msg
+	FaultGnssVelocityNoise.msg
+	FaultGnssVelocityNoiseApplied.msg
+	FaultDownwardRangeBias.msg
+	FaultDownwardRangeBiasApplied.msg
+	FaultDownwardRangeNoise.msg
+	FaultDownwardRangeNoiseApplied.msg
+	FaultDownwardRangeDegradation.msg
+	FaultDownwardRangeDegradationApplied.msg
+	FaultedDownwardDistance.msg
+	FaultDownwardRangeMeasurement.msg
+	FaultBaroAltitudeBias.msg
+	FaultBaroAltitudeBiasApplied.msg
+	FaultBaroAltitudeNoise.msg
+	FaultBaroAltitudeNoiseApplied.msg
+	FaultBaroAltitudeMeasurement.msg
+	FaultMotorOutputBias.msg
+	FaultMotorOutputBiasApplied.msg
+	FaultMotorOutputDelay.msg
+	FaultMotorOutputDelayApplied.msg
+	FaultMotorMaxOutputDegradation.msg
+	FaultMotorMaxOutputDegradationApplied.msg
+	FaultMotorOutputMeasurement.msg
 )
 list(SORT msg_files)
 

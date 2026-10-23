@@ -323,6 +323,12 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_gimbal_device_attitude_status(msg);
 		break;
 
+#if defined(MAVLINK_MSG_ID_FAULT_COMMAND)
+	case MAVLINK_MSG_ID_FAULT_COMMAND:
+		handle_message_fault_command(msg);
+		break;
+#endif // MAVLINK_MSG_ID_FAULT_COMMAND
+
 #if defined(MAVLINK_MSG_ID_SET_VELOCITY_LIMITS) // For now only defined if development.xml is used
 
 	case MAVLINK_MSG_ID_SET_VELOCITY_LIMITS:
@@ -880,6 +886,45 @@ MavlinkReceiver::handle_message_set_mode(mavlink_message_t *msg)
 
 	_cmd_pub.publish(vcmd);
 }
+
+#if defined(MAVLINK_MSG_ID_FAULT_COMMAND)
+void
+MavlinkReceiver::handle_message_fault_command(mavlink_message_t *msg)
+{
+	mavlink_fault_command_t mavlink_command{};
+	mavlink_msg_fault_command_decode(msg, &mavlink_command);
+
+	fault_command_s command{};
+	command.timestamp = hrt_absolute_time();
+
+	command.scenario_id = mavlink_command.scenario_id;
+	command.sequence = mavlink_command.sequence;
+	command.start_delay_ms = mavlink_command.start_delay_ms;
+	command.duration_ms = mavlink_command.duration_ms;
+	command.random_seed = mavlink_command.random_seed;
+	command.delay_us = mavlink_command.delay_us;
+	command.instance_mask = mavlink_command.instance_mask;
+
+	command.vector[0] = mavlink_command.vector[0];
+	command.vector[1] = mavlink_command.vector[1];
+	command.vector[2] = mavlink_command.vector[2];
+	command.scalar = mavlink_command.scalar;
+
+	command.fault_id = mavlink_command.fault_id;
+
+	command.source_system = msg->sysid;
+	command.source_component = msg->compid;
+	command.target_system = mavlink_command.target_system;
+	command.target_component = mavlink_command.target_component;
+	command.protocol_version = mavlink_command.protocol_version;
+	command.action = mavlink_command.action;
+	command.target = mavlink_command.target;
+	command.mode = mavlink_command.mode;
+	command.axis_mask = mavlink_command.axis_mask;
+
+	_fault_command_pub.publish(command);
+}
+#endif // MAVLINK_MSG_ID_FAULT_COMMAND
 
 void
 MavlinkReceiver::handle_message_distance_sensor(mavlink_message_t *msg)

@@ -388,6 +388,491 @@ int EKF2::print_status(bool verbose)
 	perf_print_counter(_ekf_update_perf);
 	perf_print_counter(_msg_missed_imu_perf);
 
+	PX4_INFO_RAW(
+		"fault imu accel bias: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32
+		" neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_imu_accel_bias_injector.has_snapshot(),
+		_imu_accel_bias_injector.update_count(),
+		_imu_accel_bias_injector.active_snapshot_count(),
+		_imu_accel_bias_injector.neutral_snapshot_count());
+
+	PX4_INFO_RAW(
+		"fault imu accel bias cache: scenario=%" PRIu32
+		" sequence=%" PRIu32
+		" fault=%" PRIu16
+		" active=%u axis_mask=%u"
+		" bias=[%.6f, %.6f, %.6f] m/s^2\n",
+		_imu_accel_bias_injector.scenario_id(),
+		_imu_accel_bias_injector.sequence(),
+		_imu_accel_bias_injector.fault_id(),
+		(unsigned)_imu_accel_bias_injector.active(),
+		(unsigned)_imu_accel_bias_injector.axis_mask(),
+		(double)_imu_accel_bias_injector.bias_m_s2(0),
+		(double)_imu_accel_bias_injector.bias_m_s2(1),
+		(double)_imu_accel_bias_injector.bias_m_s2(2));
+
+	PX4_INFO_RAW(
+		"fault imu accel bias feedback: cumulative=%" PRIu32
+		" published=%" PRIu32
+		" publish_failures=%" PRIu32 "\n",
+		_imu_accel_bias_injector.cumulative_applied_count(),
+		_imu_accel_bias_injector.feedback_published_count(),
+		_imu_accel_bias_injector.feedback_publish_failure_count());
+
+	PX4_INFO_RAW(
+		"fault imu accel noise: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32
+		" neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_imu_accel_noise_injector.has_snapshot(),
+		_imu_accel_noise_injector.update_count(),
+		_imu_accel_noise_injector.active_snapshot_count(),
+		_imu_accel_noise_injector.neutral_snapshot_count());
+
+	PX4_INFO_RAW(
+		"fault imu accel noise cache: scenario=%" PRIu32
+		" sequence=%" PRIu32
+		" fault=%" PRIu16
+		" active=%u axis_mask=%u"
+		" seed=%" PRIu32
+		" sigma=[%.6f, %.6f, %.6f] m/s^2\n",
+		_imu_accel_noise_injector.scenario_id(),
+		_imu_accel_noise_injector.sequence(),
+		_imu_accel_noise_injector.fault_id(),
+		(unsigned)_imu_accel_noise_injector.active(),
+		(unsigned)_imu_accel_noise_injector.axis_mask(),
+		_imu_accel_noise_injector.random_seed(),
+		(double)_imu_accel_noise_injector.sigma_m_s2(0),
+		(double)_imu_accel_noise_injector.sigma_m_s2(1),
+		(double)_imu_accel_noise_injector.sigma_m_s2(2));
+
+	PX4_INFO_RAW(
+		"fault imu accel noise feedback: cumulative=%" PRIu32
+		" published=%" PRIu32
+		" publish_failures=%" PRIu32 "\n",
+		_imu_accel_noise_injector.cumulative_applied_count(),
+		_imu_accel_noise_injector.feedback_published_count(),
+		_imu_accel_noise_injector.feedback_publish_failure_count());
+
+	PX4_INFO_RAW(
+		"fault imu accel noise generator: initialized=%u"
+		" initializations=%" PRIu32
+		" generated=%" PRIu32 "\n",
+		(unsigned)_imu_accel_noise_injector.generator_initialized(),
+		_imu_accel_noise_injector.generator_initialization_count(),
+		_imu_accel_noise_injector.generated_sample_count());
+
+	PX4_INFO_RAW(
+		"fault imu accel noise first accel:"
+		" [%.6f, %.6f, %.6f] m/s^2\n",
+		(double)_imu_accel_noise_injector.first_noise_accel_m_s2(0),
+		(double)_imu_accel_noise_injector.first_noise_accel_m_s2(1),
+		(double)_imu_accel_noise_injector.first_noise_accel_m_s2(2));
+
+	PX4_INFO_RAW(
+		"fault imu accel noise last accel:"
+		" [%.6f, %.6f, %.6f] m/s^2\n",
+		(double)_imu_accel_noise_injector.last_noise_accel_m_s2(0),
+		(double)_imu_accel_noise_injector.last_noise_accel_m_s2(1),
+		(double)_imu_accel_noise_injector.last_noise_accel_m_s2(2));
+
+	PX4_INFO_RAW(
+		"fault imu accel noise last delta velocity:"
+		" [%.9f, %.9f, %.9f] m/s\n",
+		(double)_imu_accel_noise_injector.last_noise_delta_velocity(0),
+		(double)_imu_accel_noise_injector.last_noise_delta_velocity(1),
+		(double)_imu_accel_noise_injector.last_noise_delta_velocity(2));
+
+	PX4_INFO_RAW(
+		"fault imu gyro noise: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32
+		" neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_imu_gyro_noise_injector.has_snapshot(),
+		_imu_gyro_noise_injector.update_count(),
+		_imu_gyro_noise_injector.active_snapshot_count(),
+		_imu_gyro_noise_injector.neutral_snapshot_count());
+
+	PX4_INFO_RAW(
+		"fault imu gyro noise cache: scenario=%" PRIu32
+		" sequence=%" PRIu32
+		" fault=%" PRIu16
+		" active=%u axis_mask=%u"
+		" seed=%" PRIu32
+		" sigma=[%.6f, %.6f, %.6f] rad/s\n",
+		_imu_gyro_noise_injector.scenario_id(),
+		_imu_gyro_noise_injector.sequence(),
+		_imu_gyro_noise_injector.fault_id(),
+		(unsigned)_imu_gyro_noise_injector.active(),
+		(unsigned)_imu_gyro_noise_injector.axis_mask(),
+		_imu_gyro_noise_injector.random_seed(),
+		(double)_imu_gyro_noise_injector.sigma_rad_s(0),
+		(double)_imu_gyro_noise_injector.sigma_rad_s(1),
+		(double)_imu_gyro_noise_injector.sigma_rad_s(2));
+
+	PX4_INFO_RAW(
+		"fault imu gyro noise feedback: cumulative=%" PRIu32
+		" published=%" PRIu32
+		" publish_failures=%" PRIu32 "\n",
+		_imu_gyro_noise_injector.cumulative_applied_count(),
+		_imu_gyro_noise_injector.feedback_published_count(),
+		_imu_gyro_noise_injector.feedback_publish_failure_count());
+
+	PX4_INFO_RAW(
+		"fault imu gyro noise generator: initialized=%u"
+		" initializations=%" PRIu32
+		" generated=%" PRIu32 "\n",
+		(unsigned)_imu_gyro_noise_injector.generator_initialized(),
+		_imu_gyro_noise_injector.generator_initialization_count(),
+		_imu_gyro_noise_injector.generated_sample_count());
+
+	PX4_INFO_RAW(
+		"fault imu gyro noise first angular rate:"
+		" [%.6f, %.6f, %.6f] rad/s\n",
+		(double)_imu_gyro_noise_injector.first_noise_angular_rate_rad_s(0),
+		(double)_imu_gyro_noise_injector.first_noise_angular_rate_rad_s(1),
+		(double)_imu_gyro_noise_injector.first_noise_angular_rate_rad_s(2));
+
+	PX4_INFO_RAW(
+		"fault imu gyro noise last angular rate:"
+		" [%.6f, %.6f, %.6f] rad/s\n",
+		(double)_imu_gyro_noise_injector.last_noise_angular_rate_rad_s(0),
+		(double)_imu_gyro_noise_injector.last_noise_angular_rate_rad_s(1),
+		(double)_imu_gyro_noise_injector.last_noise_angular_rate_rad_s(2));
+
+	PX4_INFO_RAW(
+		"fault imu gyro noise last delta angle:"
+		" [%.9f, %.9f, %.9f] rad\n",
+		(double)_imu_gyro_noise_injector.last_noise_delta_angle(0),
+		(double)_imu_gyro_noise_injector.last_noise_delta_angle(1),
+		(double)_imu_gyro_noise_injector.last_noise_delta_angle(2));
+
+#if defined(CONFIG_EKF2_MAGNETOMETER)
+	PX4_INFO_RAW(
+		"fault mag bias: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_mag_bias_injector.has_snapshot(), _mag_bias_injector.update_count(),
+		_mag_bias_injector.active_snapshot_count(), _mag_bias_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault mag bias cache: scenario=%" PRIu32 " sequence=%" PRIu32
+		" fault=%" PRIu16 " active=%u axis_mask=%u bias=[%.6f, %.6f, %.6f] Gauss\n",
+		_mag_bias_injector.scenario_id(), _mag_bias_injector.sequence(), _mag_bias_injector.fault_id(),
+		(unsigned)_mag_bias_injector.active(), (unsigned)_mag_bias_injector.axis_mask(),
+		(double)_mag_bias_injector.bias_ga(0), (double)_mag_bias_injector.bias_ga(1),
+		(double)_mag_bias_injector.bias_ga(2));
+	PX4_INFO_RAW(
+		"fault mag bias feedback: cumulative=%" PRIu32 " published=%" PRIu32
+		" publish_failures=%" PRIu32 "\n", _mag_bias_injector.cumulative_applied_count(),
+		_mag_bias_injector.feedback_published_count(), _mag_bias_injector.feedback_publish_failure_count());
+	PX4_INFO_RAW(
+		"fault mag noise: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_mag_noise_injector.has_snapshot(), _mag_noise_injector.update_count(),
+		_mag_noise_injector.active_snapshot_count(), _mag_noise_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault mag noise cache: scenario=%" PRIu32 " sequence=%" PRIu32
+		" fault=%" PRIu16 " active=%u axis_mask=%u seed=%" PRIu32
+		" sigma=[%.6f, %.6f, %.6f] Gauss\n",
+		_mag_noise_injector.scenario_id(), _mag_noise_injector.sequence(),
+		_mag_noise_injector.fault_id(), (unsigned)_mag_noise_injector.active(),
+		(unsigned)_mag_noise_injector.axis_mask(), _mag_noise_injector.random_seed(),
+		(double)_mag_noise_injector.sigma_ga(0), (double)_mag_noise_injector.sigma_ga(1),
+		(double)_mag_noise_injector.sigma_ga(2));
+	PX4_INFO_RAW(
+		"fault mag noise feedback: cumulative=%" PRIu32 " published=%" PRIu32
+		" publish_failures=%" PRIu32 "\n",
+		_mag_noise_injector.cumulative_applied_count(),
+		_mag_noise_injector.feedback_published_count(),
+		_mag_noise_injector.feedback_publish_failure_count());
+	PX4_INFO_RAW(
+		"fault mag noise generator: initialized=%u initializations=%" PRIu32
+		" generated=%" PRIu32 "\n",
+		(unsigned)_mag_noise_injector.generator_initialized(),
+		_mag_noise_injector.generator_initialization_count(),
+		_mag_noise_injector.generated_sample_count());
+	PX4_INFO_RAW("fault mag noise first sample: [%.6f, %.6f, %.6f] Gauss\n",
+		(double)_mag_noise_injector.first_noise_ga(0),
+		(double)_mag_noise_injector.first_noise_ga(1),
+		(double)_mag_noise_injector.first_noise_ga(2));
+	PX4_INFO_RAW("fault mag noise last sample: [%.6f, %.6f, %.6f] Gauss\n",
+		(double)_mag_noise_injector.last_noise_ga(0),
+		(double)_mag_noise_injector.last_noise_ga(1),
+		(double)_mag_noise_injector.last_noise_ga(2));
+#endif
+
+#if defined(CONFIG_EKF2_GNSS)
+	PX4_INFO_RAW(
+		"fault gnss position bias: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_gnss_position_bias_injector.has_snapshot(),
+		_gnss_position_bias_injector.update_count(),
+		_gnss_position_bias_injector.active_snapshot_count(),
+		_gnss_position_bias_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault gnss position bias cache: scenario=%" PRIu32
+		" sequence=%" PRIu32 " fault=%" PRIu16
+		" active=%u axis_mask=%u bias=[%.6f, %.6f, %.6f] m NED\n",
+		_gnss_position_bias_injector.scenario_id(),
+		_gnss_position_bias_injector.sequence(),
+		_gnss_position_bias_injector.fault_id(),
+		(unsigned)_gnss_position_bias_injector.active(),
+		(unsigned)_gnss_position_bias_injector.axis_mask(),
+		(double)_gnss_position_bias_injector.bias_ned_m(0),
+		(double)_gnss_position_bias_injector.bias_ned_m(1),
+		(double)_gnss_position_bias_injector.bias_ned_m(2));
+	PX4_INFO_RAW(
+		"fault gnss position bias feedback: cumulative=%" PRIu32
+		" published=%" PRIu32 " publish_failures=%" PRIu32 "\n",
+		_gnss_position_bias_injector.cumulative_applied_count(),
+		_gnss_position_bias_injector.feedback_published_count(),
+		_gnss_position_bias_injector.feedback_publish_failure_count());
+
+	PX4_INFO_RAW(
+		"fault gnss position noise: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_gnss_position_noise_injector.has_snapshot(),
+		_gnss_position_noise_injector.update_count(),
+		_gnss_position_noise_injector.active_snapshot_count(),
+		_gnss_position_noise_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault gnss position noise cache: scenario=%" PRIu32
+		" sequence=%" PRIu32 " fault=%" PRIu16
+		" active=%u axis_mask=%u seed=%" PRIu32
+		" sigma=[%.6f, %.6f, %.6f] m NED\n",
+		_gnss_position_noise_injector.scenario_id(),
+		_gnss_position_noise_injector.sequence(),
+		_gnss_position_noise_injector.fault_id(),
+		(unsigned)_gnss_position_noise_injector.active(),
+		(unsigned)_gnss_position_noise_injector.axis_mask(),
+		_gnss_position_noise_injector.random_seed(),
+		(double)_gnss_position_noise_injector.sigma_ned_m(0),
+		(double)_gnss_position_noise_injector.sigma_ned_m(1),
+		(double)_gnss_position_noise_injector.sigma_ned_m(2));
+	PX4_INFO_RAW(
+		"fault gnss position noise feedback: cumulative=%" PRIu32
+		" published=%" PRIu32 " publish_failures=%" PRIu32 "\n",
+		_gnss_position_noise_injector.cumulative_applied_count(),
+		_gnss_position_noise_injector.feedback_published_count(),
+		_gnss_position_noise_injector.feedback_publish_failure_count());
+	PX4_INFO_RAW(
+		"fault gnss position noise generator: initialized=%u"
+		" initializations=%" PRIu32 " generated=%" PRIu32 "\n",
+		(unsigned)_gnss_position_noise_injector.generator_initialized(),
+		_gnss_position_noise_injector.generator_initialization_count(),
+		_gnss_position_noise_injector.generated_sample_count());
+	PX4_INFO_RAW(
+		"fault gnss position noise first: [%.6f, %.6f, %.6f] m NED\n",
+		(double)_gnss_position_noise_injector.first_noise_ned_m(0),
+		(double)_gnss_position_noise_injector.first_noise_ned_m(1),
+		(double)_gnss_position_noise_injector.first_noise_ned_m(2));
+	PX4_INFO_RAW(
+		"fault gnss position noise last: [%.6f, %.6f, %.6f] m NED\n",
+		(double)_gnss_position_noise_injector.last_noise_ned_m(0),
+		(double)_gnss_position_noise_injector.last_noise_ned_m(1),
+		(double)_gnss_position_noise_injector.last_noise_ned_m(2));
+
+	PX4_INFO_RAW(
+		"fault gnss velocity bias: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_gnss_velocity_bias_injector.has_snapshot(),
+		_gnss_velocity_bias_injector.update_count(),
+		_gnss_velocity_bias_injector.active_snapshot_count(),
+		_gnss_velocity_bias_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault gnss velocity bias cache: scenario=%" PRIu32
+		" sequence=%" PRIu32 " fault=%" PRIu16
+		" active=%u axis_mask=%u bias=[%.6f, %.6f, %.6f] m/s NED\n",
+		_gnss_velocity_bias_injector.scenario_id(),
+		_gnss_velocity_bias_injector.sequence(),
+		_gnss_velocity_bias_injector.fault_id(),
+		(unsigned)_gnss_velocity_bias_injector.active(),
+		(unsigned)_gnss_velocity_bias_injector.axis_mask(),
+		(double)_gnss_velocity_bias_injector.bias_ned_m_s(0),
+		(double)_gnss_velocity_bias_injector.bias_ned_m_s(1),
+		(double)_gnss_velocity_bias_injector.bias_ned_m_s(2));
+	PX4_INFO_RAW(
+		"fault gnss velocity bias feedback: cumulative=%" PRIu32
+		" published=%" PRIu32 " publish_failures=%" PRIu32 "\n",
+		_gnss_velocity_bias_injector.cumulative_applied_count(),
+		_gnss_velocity_bias_injector.feedback_published_count(),
+		_gnss_velocity_bias_injector.feedback_publish_failure_count());
+
+	PX4_INFO_RAW(
+		"fault gnss velocity noise: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_gnss_velocity_noise_injector.has_snapshot(),
+		_gnss_velocity_noise_injector.update_count(),
+		_gnss_velocity_noise_injector.active_snapshot_count(),
+		_gnss_velocity_noise_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault gnss velocity noise cache: scenario=%" PRIu32
+		" sequence=%" PRIu32 " fault=%" PRIu16
+		" active=%u axis_mask=%u seed=%" PRIu32
+		" sigma=[%.6f, %.6f, %.6f] m/s NED\n",
+		_gnss_velocity_noise_injector.scenario_id(),
+		_gnss_velocity_noise_injector.sequence(),
+		_gnss_velocity_noise_injector.fault_id(),
+		(unsigned)_gnss_velocity_noise_injector.active(),
+		(unsigned)_gnss_velocity_noise_injector.axis_mask(),
+		_gnss_velocity_noise_injector.random_seed(),
+		(double)_gnss_velocity_noise_injector.sigma_ned_m_s(0),
+		(double)_gnss_velocity_noise_injector.sigma_ned_m_s(1),
+		(double)_gnss_velocity_noise_injector.sigma_ned_m_s(2));
+	PX4_INFO_RAW(
+		"fault gnss velocity noise feedback: cumulative=%" PRIu32
+		" published=%" PRIu32 " publish_failures=%" PRIu32 "\n",
+		_gnss_velocity_noise_injector.cumulative_applied_count(),
+		_gnss_velocity_noise_injector.feedback_published_count(),
+		_gnss_velocity_noise_injector.feedback_publish_failure_count());
+	PX4_INFO_RAW(
+		"fault gnss velocity noise generator: initialized=%u"
+		" initializations=%" PRIu32 " generated=%" PRIu32 "\n",
+		(unsigned)_gnss_velocity_noise_injector.generator_initialized(),
+		_gnss_velocity_noise_injector.generator_initialization_count(),
+		_gnss_velocity_noise_injector.generated_sample_count());
+	PX4_INFO_RAW(
+		"fault gnss velocity noise first: [%.6f, %.6f, %.6f] m/s NED\n",
+		(double)_gnss_velocity_noise_injector.first_noise_ned_m_s(0),
+		(double)_gnss_velocity_noise_injector.first_noise_ned_m_s(1),
+		(double)_gnss_velocity_noise_injector.first_noise_ned_m_s(2));
+	PX4_INFO_RAW(
+		"fault gnss velocity noise last: [%.6f, %.6f, %.6f] m/s NED\n",
+		(double)_gnss_velocity_noise_injector.last_noise_ned_m_s(0),
+		(double)_gnss_velocity_noise_injector.last_noise_ned_m_s(1),
+		(double)_gnss_velocity_noise_injector.last_noise_ned_m_s(2));
+#endif
+
+#if defined(CONFIG_EKF2_BAROMETER)
+	PX4_INFO_RAW(
+		"fault baro altitude bias: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_baro_altitude_bias_injector.has_snapshot(),
+		_baro_altitude_bias_injector.update_count(),
+		_baro_altitude_bias_injector.active_snapshot_count(),
+		_baro_altitude_bias_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault baro altitude bias cache: scenario=%" PRIu32
+		" sequence=%" PRIu32 " fault=%" PRIu16
+		" active=%u bias=%.6f m cumulative=%" PRIu32 "\n",
+		_baro_altitude_bias_injector.scenario_id(),
+		_baro_altitude_bias_injector.sequence(),
+		_baro_altitude_bias_injector.fault_id(),
+		(unsigned)_baro_altitude_bias_injector.active(),
+		(double)_baro_altitude_bias_injector.bias_m(),
+		_baro_altitude_bias_injector.cumulative_applied_count());
+	PX4_INFO_RAW(
+		"fault baro altitude noise: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_baro_altitude_noise_injector.has_snapshot(),
+		_baro_altitude_noise_injector.update_count(),
+		_baro_altitude_noise_injector.active_snapshot_count(),
+		_baro_altitude_noise_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault baro altitude noise cache: scenario=%" PRIu32
+		" sequence=%" PRIu32 " fault=%" PRIu16
+		" active=%u seed=%" PRIu32 " sigma=%.6f m cumulative=%" PRIu32 "\n",
+		_baro_altitude_noise_injector.scenario_id(),
+		_baro_altitude_noise_injector.sequence(),
+		_baro_altitude_noise_injector.fault_id(),
+		(unsigned)_baro_altitude_noise_injector.active(),
+		_baro_altitude_noise_injector.random_seed(),
+		(double)_baro_altitude_noise_injector.sigma_m(),
+		_baro_altitude_noise_injector.cumulative_applied_count());
+	PX4_INFO_RAW(
+		"fault baro altitude noise generator: initialized=%u initializations=%" PRIu32
+		" generated=%" PRIu32 " first=%.6f m last=%.6f m\n",
+		(unsigned)_baro_altitude_noise_injector.generator_initialized(),
+		_baro_altitude_noise_injector.generator_initialization_count(),
+		_baro_altitude_noise_injector.generated_sample_count(),
+		(double)_baro_altitude_noise_injector.first_noise_m(),
+		(double)_baro_altitude_noise_injector.last_noise_m());
+#endif
+
+#if defined(CONFIG_EKF2_RANGE_FINDER)
+	PX4_INFO_RAW(
+		"fault downward range bias: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_downward_range_bias_injector.has_snapshot(),
+		_downward_range_bias_injector.update_count(),
+		_downward_range_bias_injector.active_snapshot_count(),
+		_downward_range_bias_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault downward range bias cache: scenario=%" PRIu32
+		" sequence=%" PRIu32 " fault=%" PRIu16
+		" active=%u bias=%.6f m cumulative=%" PRIu32 "\n",
+		_downward_range_bias_injector.scenario_id(),
+		_downward_range_bias_injector.sequence(),
+		_downward_range_bias_injector.fault_id(),
+		(unsigned)_downward_range_bias_injector.active(),
+		(double)_downward_range_bias_injector.bias_m(),
+		_downward_range_bias_injector.cumulative_applied_count());
+	PX4_INFO_RAW(
+		"fault downward range noise: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32 " neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_downward_range_noise_injector.has_snapshot(),
+		_downward_range_noise_injector.update_count(),
+		_downward_range_noise_injector.active_snapshot_count(),
+		_downward_range_noise_injector.neutral_snapshot_count());
+	PX4_INFO_RAW(
+		"fault downward range noise cache: scenario=%" PRIu32
+		" sequence=%" PRIu32 " fault=%" PRIu16
+		" active=%u seed=%" PRIu32 " sigma=%.6f m cumulative=%" PRIu32 "\n",
+		_downward_range_noise_injector.scenario_id(),
+		_downward_range_noise_injector.sequence(),
+		_downward_range_noise_injector.fault_id(),
+		(unsigned)_downward_range_noise_injector.active(),
+		_downward_range_noise_injector.random_seed(),
+		(double)_downward_range_noise_injector.sigma_m(),
+		_downward_range_noise_injector.cumulative_applied_count());
+	PX4_INFO_RAW(
+		"fault downward range noise generator: initialized=%u initializations=%" PRIu32
+		" generated=%" PRIu32 " first=%.6f m last=%.6f m\n",
+		(unsigned)_downward_range_noise_injector.generator_initialized(),
+		_downward_range_noise_injector.generator_initialization_count(),
+		_downward_range_noise_injector.generated_sample_count(),
+		(double)_downward_range_noise_injector.first_noise_m(),
+		(double)_downward_range_noise_injector.last_noise_m());
+	PX4_INFO_RAW(
+		"fault downward range degradation: snapshot=%u updates=%" PRIu32
+		" active=%u configured_max=%.6f m cumulative=%" PRIu32 "\n",
+		(unsigned)_downward_range_degradation_injector.has_snapshot(),
+		_downward_range_degradation_injector.update_count(),
+		(unsigned)_downward_range_degradation_injector.active(),
+		(double)_downward_range_degradation_injector.configured_max_distance_m(),
+		_downward_range_degradation_injector.cumulative_applied_count());
+#endif
+
+	PX4_INFO_RAW(
+		"fault imu gyro bias: snapshot=%u updates=%" PRIu32
+		" active_snapshots=%" PRIu32
+		" neutral_snapshots=%" PRIu32 "\n",
+		(unsigned)_imu_gyro_bias_injector.has_snapshot(),
+		_imu_gyro_bias_injector.update_count(),
+		_imu_gyro_bias_injector.active_snapshot_count(),
+		_imu_gyro_bias_injector.neutral_snapshot_count());
+
+	PX4_INFO_RAW(
+		"fault imu gyro bias cache: scenario=%" PRIu32
+		" sequence=%" PRIu32
+		" fault=%" PRIu16
+		" active=%u axis_mask=%u"
+		" bias=[%.6f, %.6f, %.6f] rad/s\n",
+		_imu_gyro_bias_injector.scenario_id(),
+		_imu_gyro_bias_injector.sequence(),
+		_imu_gyro_bias_injector.fault_id(),
+		(unsigned)_imu_gyro_bias_injector.active(),
+		(unsigned)_imu_gyro_bias_injector.axis_mask(),
+		(double)_imu_gyro_bias_injector.bias_rad_s(0),
+		(double)_imu_gyro_bias_injector.bias_rad_s(1),
+		(double)_imu_gyro_bias_injector.bias_rad_s(2));
+
+	PX4_INFO_RAW(
+		"fault imu gyro bias feedback: cumulative=%" PRIu32
+		" published=%" PRIu32
+		" publish_failures=%" PRIu32 "\n",
+		_imu_gyro_bias_injector.cumulative_applied_count(),
+		_imu_gyro_bias_injector.feedback_published_count(),
+		_imu_gyro_bias_injector.feedback_publish_failure_count());
+
 	if (verbose) {
 #if defined(CONFIG_EKF2_VERBOSE_STATUS)
 		_ekf.print_status();
@@ -405,6 +890,35 @@ void EKF2::Run()
 
 		return;
 	}
+
+	/*
+	 * Consume the newest manager-owned runtime snapshot into this EKF
+	 * instance's local cache. A valid active effect is applied later, only
+	 * after the current IMU sample has been assembled.
+	 */
+	_imu_accel_bias_injector.update(_instance);
+	_imu_accel_noise_injector.update(_instance);
+	_imu_gyro_bias_injector.update(_instance);
+	_imu_gyro_noise_injector.update(_instance);
+#if defined(CONFIG_EKF2_BAROMETER)
+	_baro_altitude_bias_injector.update(_instance);
+	_baro_altitude_noise_injector.update(_instance);
+#endif
+#if defined(CONFIG_EKF2_GNSS)
+	_gnss_position_bias_injector.update(_instance);
+	_gnss_position_noise_injector.update(_instance);
+	_gnss_velocity_bias_injector.update(_instance);
+	_gnss_velocity_noise_injector.update(_instance);
+#endif
+#if defined(CONFIG_EKF2_RANGE_FINDER)
+	_downward_range_bias_injector.update(_instance);
+	_downward_range_noise_injector.update(_instance);
+	_downward_range_degradation_injector.update(_instance);
+#endif
+#if defined(CONFIG_EKF2_MAGNETOMETER)
+	_mag_bias_injector.update(_instance);
+	_mag_noise_injector.update(_instance);
+#endif
 
 	// check for parameter updates
 	if (_parameter_update_sub.updated() || !_callback_registered) {
@@ -647,6 +1161,46 @@ void EKF2::Run()
 
 	if (imu_updated) {
 		const hrt_abstime now = imu_sample_new.time_us;
+
+		/*
+		 * Apply the active residual body-frame gyroscope bias exactly once,
+		 * after the complete IMU sample is assembled and immediately before
+		 * the existing acceleration faults and estimator consumption.
+		 */
+		_imu_gyro_bias_injector.apply(
+			imu_sample_new.delta_ang,
+			imu_sample_new.delta_ang_dt,
+			imu_sample_new.time_us,
+			_instance);
+
+		/* Add deterministic Gaussian angular-rate noise after gyro bias. */
+		_imu_gyro_noise_injector.apply(
+			imu_sample_new.delta_ang,
+			imu_sample_new.delta_ang_dt,
+			imu_sample_new.time_us,
+			_instance);
+
+		/*
+		 * Apply the active residual body-frame acceleration bias exactly
+		 * once, at the common single-instance/multi-instance convergence
+		 * point and immediately before the estimator consumes the sample.
+		 */
+		_imu_accel_bias_injector.apply(
+			imu_sample_new.delta_vel,
+			imu_sample_new.delta_vel_dt,
+			imu_sample_new.time_us,
+			_instance);
+
+		/*
+		 * Add a fresh deterministic Gaussian acceleration-noise sample after
+		 * the residual bias and before the estimator consumes this IMU
+		 * sample. No calibration-state or learned-bias gate is consulted.
+		 */
+		_imu_accel_noise_injector.apply(
+			imu_sample_new.delta_vel,
+			imu_sample_new.delta_vel_dt,
+			imu_sample_new.time_us,
+			_instance);
 
 		// push imu data into estimator
 		_ekf.setIMUData(imu_sample_new);
@@ -2163,7 +2717,48 @@ void EKF2::UpdateBaroSample(ekf2_timestamps_s &ekf2_timestamps)
 
 		_ekf.set_air_density(airdata.rho);
 
-		_ekf.setBaroData(baroSample{airdata.timestamp_sample, airdata.baro_alt_meter, reset});
+		const float raw_altitude_m = airdata.baro_alt_meter;
+		float faulted_altitude_m = raw_altitude_m;
+		float bias_effect_m = 0.0f;
+		float noise_effect_m = 0.0f;
+		const bool bias_applied = _baro_altitude_bias_injector.apply(
+			faulted_altitude_m, airdata.timestamp_sample, _instance, bias_effect_m);
+		const bool noise_applied = _baro_altitude_noise_injector.apply(
+			faulted_altitude_m, airdata.timestamp_sample, _instance, noise_effect_m);
+
+		/* Preserve the normal reset, timestamp and density path. Only the scalar
+		 * altitude field supplied to EKF2 is transformed. */
+		_ekf.setBaroData(baroSample{airdata.timestamp_sample, faulted_altitude_m, reset});
+
+		fault_baro_altitude_measurement_s measurement{};
+		measurement.timestamp = hrt_absolute_time();
+		measurement.timestamp_sample = airdata.timestamp_sample;
+		measurement.device_id = airdata.baro_device_id;
+		measurement.raw_altitude_m = raw_altitude_m;
+		measurement.faulted_altitude_m = faulted_altitude_m;
+		measurement.bias_effect_m = bias_applied ? bias_effect_m : 0.0f;
+		measurement.noise_effect_m = noise_applied ? noise_effect_m : 0.0f;
+		measurement.rho = airdata.rho;
+		measurement.calibration_count = airdata.calibration_count;
+		measurement.estimator_instance = ((_instance >= 0) && (_instance < UINT8_MAX))
+			? static_cast<uint8_t>(_instance) : UINT8_MAX;
+		measurement.reset = reset;
+		measurement.source_finite = std::isfinite(raw_altitude_m);
+		measurement.bias_active = _baro_altitude_bias_injector.active();
+		measurement.noise_active = _baro_altitude_noise_injector.active();
+		measurement.bias_applied = bias_applied;
+		measurement.noise_applied = noise_applied;
+		if (measurement.bias_active) {
+			measurement.bias_scenario_id = _baro_altitude_bias_injector.scenario_id();
+			measurement.bias_definition_sequence = _baro_altitude_bias_injector.sequence();
+			measurement.bias_fault_id = _baro_altitude_bias_injector.fault_id();
+		}
+		if (measurement.noise_active) {
+			measurement.noise_scenario_id = _baro_altitude_noise_injector.scenario_id();
+			measurement.noise_definition_sequence = _baro_altitude_noise_injector.sequence();
+			measurement.noise_fault_id = _baro_altitude_noise_injector.fault_id();
+		}
+		_fault_baro_altitude_measurement_pub.publish(measurement);
 
 		ekf2_timestamps.vehicle_air_data_timestamp_rel = (int16_t)((int64_t)airdata.timestamp / 100 -
 				(int64_t)ekf2_timestamps.timestamp / 100);
@@ -2424,6 +3019,29 @@ void EKF2::UpdateGpsSample(ekf2_timestamps_s &ekf2_timestamps)
 			.yaw_offset = vehicle_gps_position.heading_offset,
 		};
 
+		/*
+		 * Apply only to the estimator-input position and velocity. The
+		 * original vehicle_gps_position topic and all GNSS health, quality,
+		 * accuracy, validity and availability metadata remain unchanged.
+		 * Each measurement family applies bias before deterministic noise.
+		 */
+		_gnss_position_bias_injector.apply(
+			gnss_sample,
+			gnss_sample.time_us,
+			_instance);
+		_gnss_position_noise_injector.apply(
+			gnss_sample,
+			gnss_sample.time_us,
+			_instance);
+		_gnss_velocity_bias_injector.apply(
+			gnss_sample,
+			gnss_sample.time_us,
+			_instance);
+		_gnss_velocity_noise_injector.apply(
+			gnss_sample,
+			gnss_sample.time_us,
+			_instance);
+
 		_ekf.setGpsData(gnss_sample);
 
 		_gps_time_usec = gnss_sample.time_us;
@@ -2463,7 +3081,10 @@ void EKF2::UpdateMagSample(ekf2_timestamps_s &ekf2_timestamps)
 			_mag_cal = {};
 		}
 
-		_ekf.setMagData(magSample{magnetometer.timestamp_sample, Vector3f{magnetometer.magnetometer_ga}, reset});
+		matrix::Vector3f magnetic_field_ga{magnetometer.magnetometer_ga};
+		_mag_bias_injector.apply(magnetic_field_ga, magnetometer.timestamp_sample, _instance);
+		_mag_noise_injector.apply(magnetic_field_ga, magnetometer.timestamp_sample, _instance);
+		_ekf.setMagData(magSample{magnetometer.timestamp_sample, magnetic_field_ga, reset});
 
 		ekf2_timestamps.vehicle_magnetometer_timestamp_rel = (int16_t)((int64_t)magnetometer.timestamp / 100 -
 				(int64_t)ekf2_timestamps.timestamp / 100);
@@ -2472,29 +3093,134 @@ void EKF2::UpdateMagSample(ekf2_timestamps_s &ekf2_timestamps)
 #endif // CONFIG_EKF2_MAGNETOMETER
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
+void EKF2::PublishFaultedDownwardDistance(hrt_abstime now_us)
+{
+	static constexpr hrt_abstime OutputIntervalUs = 20_ms;
+	static constexpr hrt_abstime SourceFreshnessUs = 100_ms;
+	static constexpr float DefaultMinDistanceM = 0.02f;
+	static constexpr float DefaultMaxDistanceM = 8.0f;
+	const float infinity = INFINITY;
+
+	if ((_last_fault_downward_range_output_publish != 0)
+	    && (now_us < _last_fault_downward_range_output_publish + OutputIntervalUs)) {
+		return;
+	}
+
+	faulted_downward_distance_s output{};
+	output.timestamp = now_us;
+	output.raw_distance_m = infinity;
+	output.faulted_distance_m = infinity;
+	output.min_distance_m = DefaultMinDistanceM;
+	output.nominal_max_distance_m = DefaultMaxDistanceM;
+	output.effective_max_distance_m =
+		_downward_range_degradation_injector.effective_max_distance_m(DefaultMaxDistanceM);
+	output.estimator_instance = ((_instance >= 0) && (_instance < UINT8_MAX))
+		? static_cast<uint8_t>(_instance) : UINT8_MAX;
+	output.signal_quality = -1;
+	output.availability_reason = faulted_downward_distance_s::AVAILABILITY_NO_SOURCE;
+	output.no_detection = true;
+
+	if (_has_last_fault_downward_range_measurement) {
+		const fault_downward_range_measurement_s &measurement =
+			_last_fault_downward_range_measurement;
+		output.timestamp_sample = measurement.timestamp_sample;
+		output.sample_age_us = (now_us >= measurement.timestamp_sample)
+			? now_us - measurement.timestamp_sample : 0;
+		output.device_id = measurement.device_id;
+		output.raw_distance_m = measurement.raw_distance_m;
+		output.min_distance_m = measurement.min_distance_m;
+		output.nominal_max_distance_m = measurement.nominal_max_distance_m;
+		output.variance_m2 = measurement.variance_m2;
+		output.signal_quality = measurement.signal_quality;
+		output.sensor_type = measurement.sensor_type;
+		output.orientation = measurement.orientation;
+		output.source_present = true;
+
+		if (output.sample_age_us <= SourceFreshnessUs) {
+			output.source_fresh = true;
+			output.source_valid = measurement.source_valid;
+			output.measurement_available = measurement.measurement_available;
+			output.no_detection = measurement.no_detection;
+			output.availability_reason = measurement.availability_reason;
+			output.faulted_distance_m = measurement.faulted_distance_m;
+			output.bias_effect_m = measurement.bias_effect_m;
+			output.noise_effect_m = measurement.noise_effect_m;
+			output.effective_max_distance_m = measurement.effective_max_distance_m;
+			output.bias_scenario_id = measurement.bias_scenario_id;
+			output.bias_definition_sequence = measurement.bias_definition_sequence;
+			output.noise_scenario_id = measurement.noise_scenario_id;
+			output.noise_definition_sequence = measurement.noise_definition_sequence;
+			output.degradation_scenario_id = measurement.degradation_scenario_id;
+			output.degradation_definition_sequence = measurement.degradation_definition_sequence;
+			output.bias_fault_id = measurement.bias_fault_id;
+			output.noise_fault_id = measurement.noise_fault_id;
+			output.degradation_fault_id = measurement.degradation_fault_id;
+			output.bias_active = measurement.bias_active;
+			output.noise_active = measurement.noise_active;
+			output.range_degradation_active = measurement.range_degradation_active;
+			output.bias_applied = measurement.bias_applied;
+			output.noise_applied = measurement.noise_applied;
+			output.range_degradation_applied = measurement.range_degradation_applied;
+		} else {
+			output.availability_reason = faulted_downward_distance_s::AVAILABILITY_STALE;
+		}
+	}
+
+	if (!output.source_fresh) {
+		output.faulted_distance_m = infinity;
+		output.measurement_available = false;
+		output.no_detection = true;
+		output.bias_effect_m = 0.0f;
+		output.noise_effect_m = 0.0f;
+		output.bias_applied = false;
+		output.noise_applied = false;
+		output.range_degradation_applied = false;
+		output.bias_active = _downward_range_bias_injector.active();
+		output.noise_active = _downward_range_noise_injector.active();
+		output.range_degradation_active = _downward_range_degradation_injector.active();
+		output.effective_max_distance_m =
+			_downward_range_degradation_injector.effective_max_distance_m(
+				std::isfinite(output.nominal_max_distance_m)
+				? output.nominal_max_distance_m : DefaultMaxDistanceM);
+
+		if (output.bias_active) {
+			output.bias_scenario_id = _downward_range_bias_injector.scenario_id();
+			output.bias_definition_sequence = _downward_range_bias_injector.sequence();
+			output.bias_fault_id = _downward_range_bias_injector.fault_id();
+		}
+		if (output.noise_active) {
+			output.noise_scenario_id = _downward_range_noise_injector.scenario_id();
+			output.noise_definition_sequence = _downward_range_noise_injector.sequence();
+			output.noise_fault_id = _downward_range_noise_injector.fault_id();
+		}
+		if (output.range_degradation_active) {
+			output.degradation_scenario_id = _downward_range_degradation_injector.scenario_id();
+			output.degradation_definition_sequence = _downward_range_degradation_injector.sequence();
+			output.degradation_fault_id = _downward_range_degradation_injector.fault_id();
+		}
+	}
+
+	_faulted_downward_distance_pub.publish(output);
+	_last_fault_downward_range_output_publish = now_us;
+}
+
 void EKF2::UpdateRangeSample(ekf2_timestamps_s &ekf2_timestamps)
 {
 	distance_sensor_s distance_sensor;
+	const float infinity = INFINITY;
 
 	if (_distance_sensor_selected < 0) {
-
-		// only consider distance sensors that have updated within the last 0.1s
 		const hrt_abstime timestamp_stale = math::max(ekf2_timestamps.timestamp, 100_ms) - 100_ms;
 
 		if (_distance_sensor_subs.advertised()) {
 			for (unsigned i = 0; i < _distance_sensor_subs.size(); i++) {
-
 				if (_distance_sensor_subs[i].update(&distance_sensor)) {
-					// only use the first instace which has the correct orientation
 					if ((distance_sensor.timestamp != 0) && (distance_sensor.timestamp > timestamp_stale)
 					    && (distance_sensor.orientation == distance_sensor_s::ROTATION_DOWNWARD_FACING)) {
-
 						int ndist = orb_group_count(ORB_ID(distance_sensor));
-
 						if (ndist > 1) {
 							PX4_INFO("%d - selected distance_sensor:%d (%d advertised)", _instance, i, ndist);
 						}
-
 						_distance_sensor_selected = i;
 						_last_range_sensor_update = distance_sensor.timestamp;
 						break;
@@ -2505,17 +3231,115 @@ void EKF2::UpdateRangeSample(ekf2_timestamps_s &ekf2_timestamps)
 	}
 
 	if (_distance_sensor_selected >= 0 && _distance_sensor_subs[_distance_sensor_selected].update(&distance_sensor)) {
-		// EKF range sample
 		if (distance_sensor.orientation == distance_sensor_s::ROTATION_DOWNWARD_FACING) {
-			rangeSample range_sample {
-				.time_us = distance_sensor.timestamp,
-				.rng = distance_sensor.current_distance,
-				.quality = distance_sensor.signal_quality,
-			};
-			_ekf.setRangeData(range_sample);
+			const float raw_distance_m = distance_sensor.current_distance;
+			float faulted_distance_m = infinity;
+			float bias_effect_m = 0.0f;
+			float noise_effect_m = 0.0f;
+			float effective_max_distance_m = distance_sensor.max_distance;
+			bool source_valid = false;
+			bool measurement_available = false;
+			bool range_degradation_applied = false;
+			bool bias_applied = false;
+			bool noise_applied = false;
+			uint8_t availability_reason = fault_downward_range_measurement_s::AVAILABILITY_NON_FINITE;
 
-			// Save sensor limits reported by the rangefinder
-			_ekf.set_rangefinder_limits(distance_sensor.min_distance, distance_sensor.max_distance);
+			const bool limits_valid = std::isfinite(distance_sensor.min_distance)
+				&& std::isfinite(distance_sensor.max_distance)
+				&& (distance_sensor.min_distance > 0.0f)
+				&& (distance_sensor.max_distance >= distance_sensor.min_distance);
+
+			if (std::isfinite(raw_distance_m) && limits_valid) {
+				if (raw_distance_m < distance_sensor.min_distance) {
+					availability_reason = fault_downward_range_measurement_s::AVAILABILITY_RAW_BELOW_MIN;
+				} else if (raw_distance_m > distance_sensor.max_distance) {
+					availability_reason = fault_downward_range_measurement_s::AVAILABILITY_RAW_ABOVE_MAX;
+				} else {
+					source_valid = true;
+					range_degradation_applied = _downward_range_degradation_injector.gate(
+						raw_distance_m, distance_sensor.max_distance,
+						distance_sensor.timestamp, _instance,
+						effective_max_distance_m);
+
+					if (range_degradation_applied) {
+						availability_reason = fault_downward_range_measurement_s::AVAILABILITY_DEGRADED_RANGE;
+					} else {
+						faulted_distance_m = raw_distance_m;
+						bias_applied = _downward_range_bias_injector.apply(
+							faulted_distance_m, distance_sensor.timestamp,
+							_instance, bias_effect_m);
+						noise_applied = _downward_range_noise_injector.apply(
+							faulted_distance_m, distance_sensor.timestamp,
+							_instance, noise_effect_m);
+						measurement_available = std::isfinite(faulted_distance_m)
+							&& (faulted_distance_m > 0.0f);
+						availability_reason = fault_downward_range_measurement_s::AVAILABILITY_VALID;
+					}
+				}
+			}
+
+			fault_downward_range_measurement_s measurement{};
+			measurement.timestamp = hrt_absolute_time();
+			measurement.timestamp_sample = distance_sensor.timestamp;
+			measurement.device_id = distance_sensor.device_id;
+			measurement.raw_distance_m = raw_distance_m;
+			measurement.faulted_distance_m = measurement_available ? faulted_distance_m : infinity;
+			measurement.bias_effect_m = measurement_available ? bias_effect_m : 0.0f;
+			measurement.noise_effect_m = measurement_available ? noise_effect_m : 0.0f;
+			measurement.min_distance_m = distance_sensor.min_distance;
+			measurement.nominal_max_distance_m = distance_sensor.max_distance;
+			measurement.effective_max_distance_m = effective_max_distance_m;
+			measurement.variance_m2 = distance_sensor.variance;
+			measurement.signal_quality = distance_sensor.signal_quality;
+			measurement.sensor_type = distance_sensor.type;
+			measurement.orientation = distance_sensor.orientation;
+			measurement.estimator_instance = ((_instance >= 0) && (_instance < UINT8_MAX))
+				? static_cast<uint8_t>(_instance) : UINT8_MAX;
+			measurement.availability_reason = availability_reason;
+			measurement.source_valid = source_valid;
+			measurement.measurement_available = measurement_available;
+			measurement.no_detection = !measurement_available;
+			measurement.bias_active = _downward_range_bias_injector.active();
+			measurement.noise_active = _downward_range_noise_injector.active();
+			measurement.range_degradation_active = _downward_range_degradation_injector.active();
+			measurement.bias_applied = bias_applied;
+			measurement.noise_applied = noise_applied;
+			measurement.range_degradation_applied = range_degradation_applied;
+
+			if (measurement.bias_active) {
+				measurement.bias_scenario_id = _downward_range_bias_injector.scenario_id();
+				measurement.bias_definition_sequence = _downward_range_bias_injector.sequence();
+				measurement.bias_fault_id = _downward_range_bias_injector.fault_id();
+			}
+			if (measurement.noise_active) {
+				measurement.noise_scenario_id = _downward_range_noise_injector.scenario_id();
+				measurement.noise_definition_sequence = _downward_range_noise_injector.sequence();
+				measurement.noise_fault_id = _downward_range_noise_injector.fault_id();
+			}
+			if (measurement.range_degradation_active) {
+				measurement.degradation_scenario_id = _downward_range_degradation_injector.scenario_id();
+				measurement.degradation_definition_sequence = _downward_range_degradation_injector.sequence();
+				measurement.degradation_fault_id = _downward_range_degradation_injector.fault_id();
+			}
+
+			_fault_downward_range_measurement_pub.publish(measurement);
+			_last_fault_downward_range_measurement = measurement;
+			_has_last_fault_downward_range_measurement = true;
+
+			if (measurement_available) {
+				rangeSample range_sample {
+					.time_us = distance_sensor.timestamp,
+					.rng = faulted_distance_m,
+					.quality = distance_sensor.signal_quality,
+				};
+				_ekf.setRangeData(range_sample);
+			}
+
+			if (limits_valid) {
+				_ekf.set_rangefinder_limits(
+					distance_sensor.min_distance,
+					distance_sensor.max_distance);
+			}
 
 			_last_range_sensor_update = ekf2_timestamps.timestamp;
 		}
@@ -2525,9 +3349,10 @@ void EKF2::UpdateRangeSample(ekf2_timestamps_s &ekf2_timestamps)
 	}
 
 	if (_last_range_sensor_update < ekf2_timestamps.timestamp - 1_s) {
-		// force reselection after timeout
 		_distance_sensor_selected = -1;
 	}
+
+	PublishFaultedDownwardDistance(hrt_absolute_time());
 }
 #endif // CONFIG_EKF2_RANGE_FINDER
 
