@@ -653,6 +653,9 @@ ControlAllocator::publish_control_allocator_status(int matrix_index)
 void
 ControlAllocator::publish_actuator_controls()
 {
+	/* Consume lifecycle snapshots even while actuator publication is disabled. */
+	_fault_motor_fault_injector.update();
+
 	if (!_publish_controls) {
 		return;
 	}
@@ -691,6 +694,15 @@ ControlAllocator::publish_actuator_controls()
 	for (int i = motors_idx; i < actuator_motors_s::NUM_CONTROLS; i++) {
 		actuator_motors.control[i] = NAN;
 	}
+
+	/*
+	 * The raw allocation is transformed exactly once at the common
+	 * actuator_motors convergence point used by both SITL and real output
+	 * drivers. Current NaN stop commands remain authoritative.
+	 */
+	_fault_motor_fault_injector.apply(
+		actuator_motors,
+		static_cast<uint8_t>(motors_idx));
 
 	_actuator_motors_pub.publish(actuator_motors);
 
@@ -836,6 +848,8 @@ int ControlAllocator::print_status()
 		PX4_INFO("Failed motors: %i (0x%x)", math::countSetBits(_handled_motor_failure_bitmask),
 			 _handled_motor_failure_bitmask);
 	}
+
+	_fault_motor_fault_injector.print_status();
 
 	// Print perf
 	perf_print_counter(_loop_perf);

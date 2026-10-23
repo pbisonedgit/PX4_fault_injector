@@ -1,0 +1,32 @@
+px4_add_module(
+    MODULE modules__fault_manager
+    MAIN fault_manager
+    SRCS
+        FaultInstance.cpp
+        FaultInstance.hpp
+        FaultRegistry.cpp
+        FaultRegistry.hpp
+        ImuAccelBiasFault.hpp
+        ImuAccelNoiseFault.hpp
+        ImuGyroBiasFault.hpp
+		ImuGyroNoiseFault.hpp
+		MagBiasFault.hpp
+		MagNoiseFault.hpp
+		GnssPositionBiasFault.hpp
+		GnssPositionNoiseFault.hpp
+		GnssVelocityBiasFault.hpp
+		GnssVelocityNoiseFault.hpp
+		DownwardRangeBiasFault.hpp
+		DownwardRangeNoiseFault.hpp
+		DownwardRangeDegradationFault.hpp
+		BaroAltitudeBiasFault.hpp
+		BaroAltitudeNoiseFault.hpp
+		MotorOutputBiasFault.hpp
+		MotorOutputDelayFault.hpp
+		MotorMaxOutputDegradationFault.hpp
+        NoEffectFault.hpp
+        FaultManager.cpp
+        FaultManager.hpp
+    DEPENDS
+        px4_work_queue
+)

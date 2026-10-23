@@ -240,6 +240,35 @@ px4_add_module(
 	SRCS
 		${EKF_SRCS}
 
+		ImuAccelBiasInjector.cpp
+		ImuAccelBiasInjector.hpp
+		ImuAccelNoiseInjector.cpp
+		ImuAccelNoiseInjector.hpp
+		ImuGyroBiasInjector.cpp
+		ImuGyroNoiseInjector.cpp
+		MagBiasInjector.cpp
+		MagNoiseInjector.cpp
+		GnssPositionFaultUtils.hpp
+		GnssPositionBiasInjector.cpp
+		GnssPositionBiasInjector.hpp
+		GnssPositionNoiseInjector.cpp
+		GnssPositionNoiseInjector.hpp
+		GnssVelocityBiasInjector.cpp
+		GnssVelocityBiasInjector.hpp
+		GnssVelocityNoiseInjector.cpp
+		GnssVelocityNoiseInjector.hpp
+		DownwardRangeBiasInjector.cpp
+		DownwardRangeBiasInjector.hpp
+		DownwardRangeNoiseInjector.cpp
+		DownwardRangeNoiseInjector.hpp
+		DownwardRangeDegradationInjector.cpp
+		DownwardRangeDegradationInjector.hpp
+		BaroAltitudeBiasInjector.cpp
+		BaroAltitudeBiasInjector.hpp
+		BaroAltitudeNoiseInjector.cpp
+		BaroAltitudeNoiseInjector.hpp
+		ImuGyroBiasInjector.hpp
+
 		EKF2.cpp
 		EKF2.hpp
 		EKF2Selector.cpp

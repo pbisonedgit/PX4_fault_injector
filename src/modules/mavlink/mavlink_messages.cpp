@@ -120,6 +120,9 @@
 #include "streams/VFR_HUD.hpp"
 #include "streams/VIBRATION.hpp"
 #include "streams/WIND_COV.hpp"
+#include "streams/FAULT_ACK.hpp"
+#include "streams/FAULT_STATUS.hpp"
+#include "streams/FAULTED_DOWNWARD_DISTANCE.hpp"
 #if defined(MAVLINK_MSG_ID_FIGURE_EIGHT_EXECUTION_STATUS)
 #include "streams/FIGURE_EIGHT_EXECUTION_STATUS.hpp"
 #endif // MAVLINK_MSG_ID_FIGURE_EIGHT_EXECUTION_STATUS
@@ -505,6 +508,15 @@ static const StreamListItem streams_list[] = {
 #if defined(CURRENT_MODE_HPP)
 	create_stream_list_item<MavlinkStreamCurrentMode>(),
 #endif // CURRENT_MODE_HPP
+#if defined(MAVLINK_MSG_ID_FAULT_ACK)
+	create_stream_list_item<MavlinkStreamFaultAck>(),
+#endif // MAVLINK_MSG_ID_FAULT_ACK
+#if defined(MAVLINK_MSG_ID_FAULT_STATUS)
+	create_stream_list_item<MavlinkStreamFaultStatus>(),
+#endif // MAVLINK_MSG_ID_FAULT_STATUS
+#if defined(MAVLINK_MSG_ID_FAULTED_DOWNWARD_DISTANCE)
+	create_stream_list_item<MavlinkStreamFaultedDownwardDistance>(),
+#endif // MAVLINK_MSG_ID_FAULTED_DOWNWARD_DISTANCE
 };
 
 const char *get_stream_name(const uint16_t msg_id)

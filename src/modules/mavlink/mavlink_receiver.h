@@ -119,6 +119,8 @@
 # include <uORB/topics/debug_vect.h>
 #endif // !CONSTRAINED_FLASH
 
+#include <uORB/topics/fault_command.h>
+
 using namespace time_literals;
 
 class Mavlink;
@@ -165,6 +167,9 @@ private:
 	void handle_message_command_int(mavlink_message_t *msg);
 	void handle_message_command_long(mavlink_message_t *msg);
 	void handle_message_distance_sensor(mavlink_message_t *msg);
+#if defined(MAVLINK_MSG_ID_FAULT_COMMAND)
+	void handle_message_fault_command(mavlink_message_t *msg);
+#endif // MAVLINK_MSG_ID_FAULT_COMMAND
 	void handle_message_follow_target(mavlink_message_t *msg);
 	void handle_message_generator_status(mavlink_message_t *msg);
 	void handle_message_set_gps_global_origin(mavlink_message_t *msg);
@@ -331,6 +336,8 @@ private:
 	uORB::Publication<debug_value_s>			_debug_value_pub{ORB_ID(debug_value)};
 	uORB::Publication<debug_vect_s>				_debug_vect_pub{ORB_ID(debug_vect)};
 #endif // !CONSTRAINED_FLASH
+
+	uORB::Publication<fault_command_s> _fault_command_pub{ORB_ID(fault_command)};
 
 	// ORB publications (multi)
 	uORB::PublicationMulti<distance_sensor_s>		_distance_sensor_pub{ORB_ID(distance_sensor)};
