@@ -127,7 +127,7 @@ Fault status reports both lifecycle state and `applied_count`. Consumer-level au
 
 ## Research context
 
-The associated manuscript is **“A Parameterized and Auditable PX4 Fault-Injection Framework for Simulation and Physical UAV Flight”**, by Zhen Peng, Yuxiang Feng, and Arnab Majumdar. It describes the framework architecture, implemented modes, consumer-side auditing, and a matched AirSim–PX4 / physical-flight case study. This repository releases the **PX4 fault-injection component**, not a turnkey reproduction of all experiments in the manuscript. Bibliographic details can be added here after publication.
+The associated manuscript is **“A Parameterized and Auditable PX4 Fault-Injection Framework for Simulation and Physical UAV Flight”**, by Zhen Peng, Yuxiang Feng, and Arnab Majumdar. It describes the framework architecture, implemented modes, consumer-side auditing, and a matched AirSim–PX4 / physical-flight case study. This repository releases the **PX4 fault-injection component**, not a turnkey reproduction of all experiments in the manuscript.
 
 ## Safety, provenance, and licences
 
